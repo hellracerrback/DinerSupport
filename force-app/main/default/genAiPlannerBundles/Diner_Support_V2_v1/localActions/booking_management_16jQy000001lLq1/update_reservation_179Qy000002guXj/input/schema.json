@@ -1,0 +1,28 @@
+{
+  "required" : [ "confirmationCode" ],
+  "unevaluatedProperties" : false,
+  "properties" : {
+    "confirmationCode" : {
+      "title" : "Confirmation Code",
+      "description" : "Confirmation Code",
+      "lightning:type" : "lightning__textType",
+      "lightning:isPII" : false,
+      "copilotAction:isUserInput" : false
+    },
+    "newDateTime" : {
+      "title" : "New Date Time",
+      "description" : "New Date Time",
+      "lightning:type" : "lightning__dateTimeStringType",
+      "lightning:isPII" : false,
+      "copilotAction:isUserInput" : false
+    },
+    "newPartySize" : {
+      "title" : "New Party Size",
+      "description" : "New Party Size",
+      "lightning:type" : "lightning__numberType",
+      "lightning:isPII" : false,
+      "copilotAction:isUserInput" : false
+    }
+  },
+  "lightning:type" : "lightning__objectType"
+}

@@ -1,0 +1,28 @@
+{
+  "required" : [ "confirmationCode" ],
+  "unevaluatedProperties" : false,
+  "properties" : {
+    "confirmationCode" : {
+      "title" : "Confirmation Code",
+      "description" : "The confirmation code of the reservation to update.",
+      "lightning:type" : "lightning__textType",
+      "lightning:isPII" : false,
+      "copilotAction:isUserInput" : false
+    },
+    "newDateTime" : {
+      "title" : "New Date Time",
+      "description" : "The new date and time for the reservation.",
+      "lightning:type" : "lightning__dateTimeStringType",
+      "lightning:isPII" : false,
+      "copilotAction:isUserInput" : false
+    },
+    "newPartySize" : {
+      "title" : "New Party Size",
+      "description" : "The new number of people in the party.",
+      "lightning:type" : "lightning__numberType",
+      "lightning:isPII" : false,
+      "copilotAction:isUserInput" : false
+    }
+  },
+  "lightning:type" : "lightning__objectType"
+}

@@ -1,0 +1,35 @@
+{
+  "required" : [ "userEmail" ],
+  "unevaluatedProperties" : false,
+  "properties" : {
+    "conversationSummary" : {
+      "title" : "Conversation Summary",
+      "description" : "A detailed summary of the conversation to help the human agent.",
+      "lightning:type" : "lightning__textType",
+      "lightning:isPII" : false,
+      "copilotAction:isUserInput" : false
+    },
+    "issueType" : {
+      "title" : "Issue Type",
+      "description" : "The category of the issue (e.g., 'Reservation', 'General Inquiry').",
+      "lightning:type" : "lightning__textType",
+      "lightning:isPII" : false,
+      "copilotAction:isUserInput" : false
+    },
+    "subject" : {
+      "title" : "Subject",
+      "description" : "A brief summary of the issue (e.g., 'Booking Issue').",
+      "lightning:type" : "lightning__textType",
+      "lightning:isPII" : false,
+      "copilotAction:isUserInput" : false
+    },
+    "userEmail" : {
+      "title" : "User Email",
+      "description" : "The diner's email address for case contact.",
+      "lightning:type" : "lightning__textType",
+      "lightning:isPII" : false,
+      "copilotAction:isUserInput" : false
+    }
+  },
+  "lightning:type" : "lightning__objectType"
+}

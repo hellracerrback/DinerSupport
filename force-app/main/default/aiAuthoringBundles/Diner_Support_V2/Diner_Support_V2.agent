@@ -1,0 +1,235 @@
+system:
+    instructions: "You are the Diner Support Agent V2. Your job is to help diners find restaurants and manage their reservations. Be proactive, professional, and helpful. Always try to resolve the user's request using the available tools."
+    messages:
+        welcome: "Hello! I'm the Diner Support Agent V2. I can help you find a great place to eat or manage your bookings. How can I help you today?"
+        error: "I'm sorry, I encountered an issue. Please try again or ask for a human agent."
+
+config:
+    developer_name: "Diner_Support_V2"
+    agent_label: "Diner Support Agent V2"
+    description: "V2 AI agent with improved proactivity for restaurant management and knowledge search."
+    agent_type: "AgentforceServiceAgent"
+    default_agent_user: "epic.16fa1777910097525@orgfarm.salesforce.com"
+
+variables:
+    userEmail: mutable string = ""
+        description: "The email address of the current user"
+    lastConfirmationCode: mutable string = ""
+        description: "The confirmation code of the most recently created or updated reservation"
+
+language:
+    default_locale: "en_US"
+
+start_agent agent_router:
+    description: "Welcome the user and route to inquiry, booking, or knowledge retrieval based on user intent"
+    reasoning:
+        actions:
+            go_to_inquiry: @utils.transition to @subagent.restaurant_inquiry
+            go_to_booking: @utils.transition to @subagent.booking_management
+            go_to_knowledge: @utils.transition to @subagent.knowledge_retrieval
+            go_to_escalation: @utils.transition to @subagent.escalation
+
+subagent restaurant_inquiry:
+    label: "Restaurant Inquiry"
+    description: "Search and provide info about restaurants"
+    reasoning:
+        instructions: ->
+            | Use the get_restaurant_info tool to find restaurants based on user criteria.
+            | If the user asks for recommendations, search for highly rated restaurants in their preferred cuisine.
+        actions:
+            search_restaurants: @actions.get_restaurant_info
+                with cuisine = ...
+                with city = ...
+                with priceRange = ...
+
+    actions:
+        get_restaurant_info:
+            description: "Searches for restaurants based on user criteria such as name, cuisine, location, or price."
+            label: "Get Restaurant Info"
+            target: "apex://AgentAction_GetRestaurantInfo"
+            inputs:
+                cuisine: string
+                    description: "Type of cuisine (e.g. Italian, Mexican)"
+                    label: "Cuisine"
+                    is_required: False
+                city: string
+                    description: "City location"
+                    label: "City"
+                    is_required: False
+                priceRange: string
+                    description: "Price range ($, $$, $$$, $$$$)"
+                    label: "Price Range"
+                    is_required: False
+            outputs:
+                results: string
+                    label: "Search Results"
+                    is_displayable: True
+
+subagent booking_management:
+    label: "Booking Management"
+    description: "Manage reservations (create, update, cancel, view)"
+    reasoning:
+        instructions: ->
+            | Help users manage their reservations. 
+            | For creating a reservation, ensure you have the restaurant name, date, time, party size, and user email.
+            | For updating or cancelling, ask for the confirmation code if not already provided.
+        actions:
+            list_reservations: @actions.get_reservations
+                with email = ...
+            create_booking: @actions.create_reservation
+                with restaurantName = ...
+                with bookingDateTime = ...
+                with partySize = ...
+                with email = ...
+            modify_booking: @actions.update_reservation
+                with confirmationCode = ...
+                with newBookingDateTime = ...
+                with newPartySize = ...
+            cancel_booking: @actions.cancel_reservation
+                with confirmationCode = ...
+
+    actions:
+        get_reservations:
+            description: "Retrieves upcoming reservations for a specific diner."
+            label: "Get Reservations"
+            target: "apex://AgentAction_GetReservations"
+            inputs:
+                email: string
+                    description: "Diner email address"
+                    label: "Email"
+                    is_required: True
+            outputs:
+                reservations: string
+                    label: "Reservations"
+                    is_displayable: True
+
+        create_reservation:
+            description: "Creates a new restaurant reservation for a diner."
+            label: "Create Reservation"
+            target: "apex://AgentAction_CreateReservation"
+            inputs:
+                restaurantName: string
+                    description: "Name of the restaurant"
+                    label: "Restaurant Name"
+                    is_required: True
+                bookingDateTime: string
+                    description: "Date and time of the reservation"
+                    label: "Date Time"
+                    is_required: True
+                partySize: number
+                    description: "Number of guests"
+                    label: "Party Size"
+                    is_required: True
+                email: string
+                    description: "Diner email address"
+                    label: "Email"
+                    is_required: True
+            outputs:
+                confirmationCode: string
+                    label: "Confirmation Code"
+                    is_displayable: True
+                message: string
+                    label: "Status Message"
+                    is_displayable: True
+
+        update_reservation:
+            description: "Modifies an existing reservation's date/time or party size."
+            label: "Update Reservation"
+            target: "apex://AgentAction_UpdateReservation"
+            inputs:
+                confirmationCode: string
+                    description: "The confirmation code of the reservation"
+                    label: "Confirmation Code"
+                    is_required: True
+                newBookingDateTime: string
+                    description: "New date and time"
+                    label: "New Date Time"
+                    is_required: False
+                newPartySize: number
+                    description: "New number of guests"
+                    label: "New Party Size"
+                    is_required: False
+            outputs:
+                success: boolean
+                    label: "Success"
+                message: string
+                    label: "Status Message"
+                    is_displayable: True
+
+        cancel_reservation:
+            description: "Cancels an existing restaurant reservation."
+            label: "Cancel Reservation"
+            target: "apex://AgentAction_CancelReservation"
+            inputs:
+                confirmationCode: string
+                    description: "The confirmation code of the reservation"
+                    label: "Confirmation Code"
+                    is_required: True
+            outputs:
+                success: boolean
+                    label: "Success"
+                message: string
+                    label: "Status Message"
+                    is_displayable: True
+
+subagent knowledge_retrieval:
+    label: "Knowledge Retrieval"
+    description: "Search the knowledge base for policies and info"
+    reasoning:
+        instructions: ->
+            | Use the search_knowledge tool to answer questions about restaurant policies, cancellation rules, or general information.
+        actions:
+            find_info: @actions.search_knowledge
+                with query = ...
+
+    actions:
+        search_knowledge:
+            description: "Searches the knowledge base for policies, procedures, and restaurant information."
+            label: "Search Knowledge"
+            target: "apex://AgentAction_SearchKnowledge"
+            inputs:
+                query: string
+                    description: "The keywords or question to search for"
+                    label: "Search Query"
+                    is_required: True
+            outputs:
+                articles: list[string]
+                    label: "Articles"
+                    is_displayable: True
+                message: string
+                    label: "Message"
+                    is_displayable: True
+
+subagent escalation:
+    label: "Escalation"
+    description: "Escalate to a human agent"
+    reasoning:
+        instructions: ->
+            | If the user asks for a human or if you cannot resolve their issue, escalate the conversation.
+        actions:
+            escalate: @actions.escalate_to_human
+                with email = ...
+                with reason = ...
+
+    actions:
+        escalate_to_human:
+            description: "Creates a support case before transferring the diner to a human agent."
+            label: "Escalate To Human"
+            target: "apex://AgentAction_EscalateToHuman"
+            inputs:
+                email: string
+                    description: "Diner email"
+                    label: "Email"
+                    is_required: False
+                reason: string
+                    description: "Reason for escalation"
+                    label: "Reason"
+                    is_required: False
+            outputs:
+                caseNumber: string
+                    label: "Case Number"
+                    is_displayable: True
+                message: string
+                    label: "Status Message"
+                    is_displayable: True
+

@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<BotVersion xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>v8</fullName>
+    <articleAnswersGPTEnabled>false</articleAnswersGPTEnabled>
+    <botDialogs>
+        <botSteps>
+            <botMessages>
+                <message>Hello! I&apos;m the Diner Support Agent V2. I can help you find a great place to eat or manage your bookings. Which restaurant can I look up for you?</message>
+                <messageIdentifier>d54dd91a-2483-4f5a-98dc-7d112682cfee</messageIdentifier>
+            </botMessages>
+            <stepIdentifier>f183464c-061e-44dd-b9a5-8f6254329870</stepIdentifier>
+            <type>Message</type>
+        </botSteps>
+        <botSteps>
+            <stepIdentifier>b6c82f16-b679-4356-90c0-2bd915b7b506</stepIdentifier>
+            <type>Wait</type>
+        </botSteps>
+        <developerName>Welcome</developerName>
+        <isPlaceholderDialog>false</isPlaceholderDialog>
+        <label>Welcome</label>
+        <showInFooterMenu>false</showInFooterMenu>
+    </botDialogs>
+    <botDialogs>
+        <botSteps>
+            <botMessages>
+                <message>I&apos;m sorry, I encountered an issue. Please try again or ask for a human.</message>
+                <messageIdentifier>263199e8-b69e-4a3b-891e-76e2e0cd18f3</messageIdentifier>
+            </botMessages>
+            <stepIdentifier>4a3c73d7-1ff5-49eb-a413-9ab01b767aa3</stepIdentifier>
+            <type>Message</type>
+        </botSteps>
+        <botSteps>
+            <stepIdentifier>bc7f0d8a-0485-495b-98ae-409d3df3d834</stepIdentifier>
+            <type>Wait</type>
+        </botSteps>
+        <developerName>Rich_Content_Error_Handling</developerName>
+        <isPlaceholderDialog>false</isPlaceholderDialog>
+        <label>Error Handler</label>
+        <showInFooterMenu>false</showInFooterMenu>
+    </botDialogs>
+    <botDialogs>
+        <botSteps>
+            <conversationSystemMessage>
+                <type>Transfer</type>
+            </conversationSystemMessage>
+            <stepIdentifier>34601780-6c76-4e71-9db1-7c12109f90e2</stepIdentifier>
+            <type>SystemMessage</type>
+        </botSteps>
+        <developerName>Transfer_To_Agent</developerName>
+        <isPlaceholderDialog>false</isPlaceholderDialog>
+        <label>Transfer To Agent</label>
+        <showInFooterMenu>false</showInFooterMenu>
+    </botDialogs>
+    <citationsEnabled>false</citationsEnabled>
+    <conversationDefinitionPlanners>
+        <genAiPlannerName>Diner_Support_V2_v8</genAiPlannerName>
+    </conversationDefinitionPlanners>
+    <conversationSystemDialogs>
+        <dialog>Rich_Content_Error_Handling</dialog>
+        <type>ErrorHandling</type>
+    </conversationSystemDialogs>
+    <conversationVariables>
+        <dataType>Number</dataType>
+        <description>The cancellation fee charged for the most recent cancellation.</description>
+        <developerName>lastCancellationFee</developerName>
+        <includeInPrompt>false</includeInPrompt>
+        <label>Last Cancellation Fee</label>
+        <visibility>Internal</visibility>
+    </conversationVariables>
+    <conversationVariables>
+        <dataType>Text</dataType>
+        <description>The last status message returned by an action.</description>
+        <developerName>lastActionMessage</developerName>
+        <includeInPrompt>false</includeInPrompt>
+        <label>Last Action Message</label>
+        <visibility>Internal</visibility>
+    </conversationVariables>
+    <conversationVariables>
+        <dataType>Text</dataType>
+        <description>The email address of the current user.</description>
+        <developerName>userEmail</developerName>
+        <includeInPrompt>false</includeInPrompt>
+        <label>User Email</label>
+        <visibility>Internal</visibility>
+    </conversationVariables>
+    <conversationVariables>
+        <dataType>Text</dataType>
+        <description>The confirmation code of the most recently created or updated reservation.</description>
+        <developerName>lastConfirmationCode</developerName>
+        <includeInPrompt>false</includeInPrompt>
+        <label>Last Confirmation Code</label>
+        <visibility>Internal</visibility>
+    </conversationVariables>
+    <conversationVariables>
+        <dataType>Text</dataType>
+        <description>The agent instructions</description>
+        <developerName>AgentScriptInternal_agent_instructions</developerName>
+        <includeInPrompt>false</includeInPrompt>
+        <label>Agent Instructions</label>
+        <visibility>Internal</visibility>
+    </conversationVariables>
+    <conversationVariables>
+        <dataType>Boolean</dataType>
+        <description>Runtime condition evaluation for if statements</description>
+        <developerName>AgentScriptInternal_condition</developerName>
+        <includeInPrompt>false</includeInPrompt>
+        <label>Runtime Condition</label>
+        <visibility>Internal</visibility>
+    </conversationVariables>
+    <conversationVariables>
+        <dataType>Number</dataType>
+        <description>The number of reservations found for the user.</description>
+        <developerName>reservationCount</developerName>
+        <includeInPrompt>false</includeInPrompt>
+        <label>Reservation Count</label>
+        <visibility>Internal</visibility>
+    </conversationVariables>
+    <conversationVariables>
+        <dataType>Text</dataType>
+        <description>The next topic to be visited</description>
+        <developerName>AgentScriptInternal_next_topic</developerName>
+        <includeInPrompt>false</includeInPrompt>
+        <label>Next Topic</label>
+        <visibility>Internal</visibility>
+    </conversationVariables>
+    <conversationVariables>
+        <dataType>Text</dataType>
+        <description>The support case number created for the user.</description>
+        <developerName>lastCaseNumber</developerName>
+        <includeInPrompt>false</includeInPrompt>
+        <label>Last Case Number</label>
+        <visibility>Internal</visibility>
+    </conversationVariables>
+    <conversationVariables>
+        <collectionType>List</collectionType>
+        <dataType>Text</dataType>
+        <description>The list of formatted restaurant summaries from the last search.</description>
+        <developerName>lastRestaurantList</developerName>
+        <includeInPrompt>false</includeInPrompt>
+        <label>Last Restaurant List</label>
+        <visibility>Internal</visibility>
+    </conversationVariables>
+    <conversationVariables>
+        <dataType>Number</dataType>
+        <description>The refund amount for the most recent cancellation.</description>
+        <developerName>lastRefundAmount</developerName>
+        <includeInPrompt>false</includeInPrompt>
+        <label>Last Refund Amount</label>
+        <visibility>Internal</visibility>
+    </conversationVariables>
+    <entryDialog>Welcome</entryDialog>
+    <intentDisambiguationEnabled>false</intentDisambiguationEnabled>
+    <intentV3Enabled>false</intentV3Enabled>
+    <knowledgeActionEnabled>false</knowledgeActionEnabled>
+    <knowledgeFallbackEnabled>false</knowledgeFallbackEnabled>
+    <smallTalkEnabled>false</smallTalkEnabled>
+    <staticPromptsEnabled>false</staticPromptsEnabled>
+    <stopRecPrompts>false</stopRecPrompts>
+    <stopWelcomePrompts>false</stopWelcomePrompts>
+    <surfacesEnabled>false</surfacesEnabled>
+    <toneType>Casual</toneType>
+</BotVersion>

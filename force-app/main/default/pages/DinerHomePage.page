@@ -1,0 +1,266 @@
+<apex:page showHeader="false" sidebar="false" standardStylesheets="false" docType="html-5.0" controller="AgentAction_GetRestaurantInfo">
+    <head>
+        <title>Intelligent Diner Support</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+        <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet" />
+        <style>
+            :root {
+                --primary: #6366f1;
+                --primary-hover: #4f46e5;
+                --bg: #0f172a;
+                --card-bg: rgba(30, 41, 59, 0.7);
+                --text: #f8fafc;
+                --text-muted: #94a3b8;
+                --glass-border: rgba(255, 255, 255, 0.1);
+            }
+
+            * {
+                box-sizing: border-box;
+                margin: 0;
+                padding: 0;
+                font-family: 'Outfit', sans-serif;
+            }
+
+            body {
+                background-color: var(--bg);
+                color: var(--text);
+                min-height: 100vh;
+                display: flex;
+                flex-direction: column;
+                overflow-x: hidden;
+            }
+
+            .animated-bg {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                z-index: -1;
+                background: radial-gradient(circle at 20% 30%, rgba(99, 102, 241, 0.15) 0%, transparent 50%),
+                            radial-gradient(circle at 80% 70%, rgba(139, 92, 246, 0.15) 0%, transparent 50%);
+            }
+
+            header {
+                padding: 2rem;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                backdrop-filter: blur(10px);
+                border-bottom: 1px solid var(--glass-border);
+                position: sticky;
+                top: 0;
+                z-index: 100;
+            }
+
+            .logo {
+                font-size: 1.5rem;
+                font-weight: 600;
+                background: linear-gradient(to right, #818cf8, #c084fc);
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+            }
+
+            main {
+                flex: 1;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                padding: 4rem 2rem;
+                text-align: center;
+            }
+
+            .hero-content {
+                max-width: 800px;
+                animation: fadeInUp 1s ease-out;
+            }
+
+            @keyframes fadeInUp {
+                from { opacity: 0; transform: translateY(20px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
+
+            h1 {
+                font-size: 4rem;
+                line-height: 1.1;
+                margin-bottom: 1.5rem;
+                background: linear-gradient(to bottom right, #fff, #94a3b8);
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+            }
+
+            p.subtitle {
+                font-size: 1.25rem;
+                color: var(--text-muted);
+                margin-bottom: 2.5rem;
+                line-height: 1.6;
+            }
+
+            .cta-container {
+                display: flex;
+                gap: 1rem;
+                justify-content: center;
+            }
+
+            .btn {
+                padding: 1rem 2rem;
+                border-radius: 12px;
+                font-weight: 600;
+                text-decoration: none;
+                transition: all 0.3s ease;
+                cursor: pointer;
+            }
+
+            .btn-primary {
+                background: var(--primary);
+                color: white;
+                box-shadow: 0 4px 20px rgba(99, 102, 241, 0.3);
+            }
+
+            .btn-primary:hover {
+                background: var(--primary-hover);
+                transform: translateY(-2px);
+                box-shadow: 0 6px 25px rgba(99, 102, 241, 0.4);
+            }
+
+            .btn-secondary {
+                background: transparent;
+                color: white;
+                border: 1px solid var(--glass-border);
+                backdrop-filter: blur(5px);
+            }
+
+            .btn-secondary:hover {
+                background: rgba(255, 255, 255, 0.05);
+                border-color: rgba(255, 255, 255, 0.3);
+            }
+
+            .features-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+                gap: 2rem;
+                width: 100%;
+                max-width: 1000px;
+                margin-top: 6rem;
+            }
+
+            .feature-card {
+                background: var(--card-bg);
+                padding: 2.5rem;
+                border-radius: 24px;
+                border: 1px solid var(--glass-border);
+                backdrop-filter: blur(12px);
+                transition: all 0.3s ease;
+                text-align: left;
+            }
+
+            .feature-card:hover {
+                transform: translateY(-5px);
+                border-color: rgba(99, 102, 241, 0.4);
+                background: rgba(30, 41, 59, 0.9);
+            }
+
+            .icon {
+                width: 48px;
+                height: 48px;
+                background: rgba(99, 102, 241, 0.1);
+                border-radius: 12px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                margin-bottom: 1.5rem;
+                color: var(--primary);
+                font-size: 1.5rem;
+            }
+
+            h3 {
+                margin-bottom: 1rem;
+                font-weight: 600;
+            }
+
+            .feature-card p {
+                color: var(--text-muted);
+                line-height: 1.5;
+            }
+
+            footer {
+                padding: 3rem;
+                border-top: 1px solid var(--glass-border);
+                text-align: center;
+                color: var(--text-muted);
+                font-size: 0.875rem;
+            }
+
+            /* Responsive */
+            @media (max-width: 768px) {
+                h1 { font-size: 2.5rem; }
+                .cta-container { flex-direction: column; width: 100%; }
+                .btn { width: 100%; }
+            }
+        </style>
+    </head>
+    <body>
+        <div class="animated-bg"></div>
+        
+        <header>
+            <div class="logo">DinerSupport AI</div>
+            <nav>
+                <a href="#" class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.9rem;">Sign In</a>
+            </nav>
+        </header>
+
+        <main>
+            <div class="hero-content">
+                <h1>The Future of <br/>Dining Experiences</h1>
+                <p class="subtitle">Discover exceptional restaurants, manage your reservations seamlessly, and enjoy AI-powered assistance tailored just for you.</p>
+                <div class="cta-container">
+                    <a href="#" class="btn btn-primary">Find a Restaurant</a>
+                    <a href="#" class="btn btn-secondary">My Bookings</a>
+                </div>
+            </div>
+
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="icon">🔍</div>
+                    <h3>Smart Discovery</h3>
+                    <p>Advanced fuzzy search that understands what you crave, from cuisine to location.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="icon">📅</div>
+                    <h3>Effortless Booking</h3>
+                    <p>Instant confirmations and easy modifications at your fingertips.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="icon">🤖</div>
+                    <h3>AI Assistant</h3>
+                    <p>24/7 intelligent support for all your dining questions and coordination.</p>
+                </div>
+            </div>
+        </main>
+
+        <footer>
+            &copy; 2026 DinerSupport AI. Built on Salesforce Agentforce.
+        </footer>
+
+        <script type='text/javascript'>
+            function initEmbeddedMessaging() {
+                try {
+                    embeddedservice_bootstrap.settings.language = 'en_US'; // For example, enter 'en' or 'en-US'
+
+                    embeddedservice_bootstrap.init(
+                        '00DQy00000p20sz',
+                        'Diner_Messaging_Channel',
+                        'https://orgfarm-036c723453-dev-ed.develop.my.site.com/ESWDinerMessagingChanne1778006016310',
+                        {
+                            scrt2URL: 'https://orgfarm-036c723453-dev-ed.develop.my.salesforce-scrt.com'
+                        }
+                    );
+                } catch (err) {
+                    console.error('Error loading Embedded Messaging: ', err);
+                }
+            };
+        </script>
+        <script type='text/javascript' src='https://orgfarm-036c723453-dev-ed.develop.my.site.com/ESWDinerMessagingChanne1778006016310/assets/js/bootstrap.min.js' onload='initEmbeddedMessaging()'></script>
+    </body>
+</apex:page>

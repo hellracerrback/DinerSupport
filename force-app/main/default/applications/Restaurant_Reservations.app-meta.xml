@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomApplication xmlns="http://soap.sforce.com/2006/04/metadata">
+    <brand>
+        <headerColor>#0176D3</headerColor>
+        <shouldOverrideOrgTheme>false</shouldOverrideOrgTheme>
+    </brand>
+    <description>Restaurant reservation management application for diners, restaurants, reservations, and agent interactions</description>
+    <formFactors>Small</formFactors>
+    <formFactors>Large</formFactors>
+    <isNavAutoTempTabsDisabled>false</isNavAutoTempTabsDisabled>
+    <isNavPersonalizationDisabled>false</isNavPersonalizationDisabled>
+    <isNavTabPersistenceDisabled>false</isNavTabPersistenceDisabled>
+    <isOmniPinnedViewEnabled>false</isOmniPinnedViewEnabled>
+    <label>Restaurant Reservations</label>
+    <navType>Standard</navType>
+    <tabs>standard-home</tabs>
+    <tabs>Diner__c</tabs>
+    <tabs>Restaurant__c</tabs>
+    <tabs>Reservation__c</tabs>
+    <tabs>Agent_Interaction__c</tabs>
+    <uiType>Lightning</uiType>
+</CustomApplication>

@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Dietary_Accommodations__c</fullName>
+    <description>Dietary accommodations offered</description>
+    <label>Dietary Accommodations</label>
+    <required>false</required>
+    <trackTrending>false</trackTrending>
+    <type>MultiselectPicklist</type>
+    <valueSet>
+        <valueSetDefinition>
+            <sorted>false</sorted>
+            <value>
+                <fullName>Vegan</fullName>
+                <default>false</default>
+                <label>Vegan</label>
+            </value>
+            <value>
+                <fullName>Vegetarian</fullName>
+                <default>false</default>
+                <label>Vegetarian</label>
+            </value>
+            <value>
+                <fullName>Gluten-Free</fullName>
+                <default>false</default>
+                <label>Gluten-Free</label>
+            </value>
+            <value>
+                <fullName>Dairy-Free</fullName>
+                <default>false</default>
+                <label>Dairy-Free</label>
+            </value>
+            <value>
+                <fullName>Nut-Free</fullName>
+                <default>false</default>
+                <label>Nut-Free</label>
+            </value>
+        </valueSetDefinition>
+    </valueSet>
+    <visibleLines>5</visibleLines>
+</CustomField>

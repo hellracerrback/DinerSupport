@@ -1,0 +1,14 @@
+{
+  "required" : [ "userEmail" ],
+  "unevaluatedProperties" : false,
+  "properties" : {
+    "userEmail" : {
+      "title" : "User Email",
+      "description" : "User Email",
+      "lightning:type" : "lightning__textType",
+      "lightning:isPII" : false,
+      "copilotAction:isUserInput" : false
+    }
+  },
+  "lightning:type" : "lightning__objectType"
+}
