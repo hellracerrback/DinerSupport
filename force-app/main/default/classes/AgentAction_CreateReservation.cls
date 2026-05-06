@@ -35,17 +35,20 @@ public with sharing class AgentAction_CreateReservation {
             }
         }
 
-        // Bulk query: Diner__c by email (via Contact__r.Email relationship)
+        // Bulk query: Diner__c by email (via Contact__r.Email or Diner__c.Email__c)
         Map<String, Diner__c> dinerByEmail = new Map<String, Diner__c>();
         if (!emails.isEmpty()) {
             for (Diner__c d : [
-                SELECT Id, Name, Contact__r.Email
+                SELECT Id, Name, Contact__r.Email, Email__c
                 FROM Diner__c
-                WHERE Contact__r.Email IN :emails
+                WHERE Contact__r.Email IN :emails OR Email__c IN :emails
                 LIMIT 200
             ]) {
                 if (d.Contact__r != null && !String.isBlank(d.Contact__r.Email)) {
                     dinerByEmail.put(d.Contact__r.Email.trim().toLowerCase(), d);
+                }
+                if (!String.isBlank(d.Email__c)) {
+                    dinerByEmail.put(d.Email__c.trim().toLowerCase(), d);
                 }
             }
         }
@@ -55,7 +58,7 @@ public with sharing class AgentAction_CreateReservation {
         List<Restaurant__c> allRestaurants = new List<Restaurant__c>();
         if (!restaurantIds.isEmpty()) {
             for (Restaurant__c r : [
-                SELECT Id, Name, Total_Capacity__c, Address__c
+                SELECT Id, Name, Total_Capacity__c, Address__c, City_Test__c, Cuisine_Type__c
                 FROM Restaurant__c
                 WHERE Id IN :restaurantIds
                 LIMIT 200
@@ -66,7 +69,7 @@ public with sharing class AgentAction_CreateReservation {
         if (!restaurantNames.isEmpty()) {
             // Query all restaurants once; we'll do fuzzy matching in memory
             allRestaurants = [
-                SELECT Id, Name, Total_Capacity__c, Address__c
+                SELECT Id, Name, Total_Capacity__c, Address__c, City_Test__c, Cuisine_Type__c
                 FROM Restaurant__c
                 ORDER BY Name ASC
                 LIMIT 200
@@ -99,6 +102,11 @@ public with sharing class AgentAction_CreateReservation {
                 results.add(result);
                 continue;
             }
+            if (req.partySize > 20) {
+                result.message = 'For parties above 20, I will escalate this to a human concierge for special handling.';
+                results.add(result);
+                continue;
+            }
 
             // Validate date is in the future
             if (req.requestedDateTime <= System.now()) {
@@ -127,13 +135,14 @@ public with sharing class AgentAction_CreateReservation {
                 for (Restaurant__c r : allRestaurants) {
                     String rName = r.Name != null ? r.Name.toLowerCase() : '';
                     String rAddr = r.Address__c != null ? r.Address__c.toLowerCase() : '';
+                    String rCity = r.City_Test__c != null ? r.City_Test__c.toLowerCase() : '';
                     // Exact name match is strongest
                     if (rName == searchTerm) {
                         bestMatch = r;
                         break;
                     }
                     // Substring match on name or address
-                    if (bestMatch == null && (rName.contains(searchTerm) || searchTerm.contains(rName) || rAddr.contains(searchTerm))) {
+                    if (bestMatch == null && (rName.contains(searchTerm) || searchTerm.contains(rName) || rAddr.contains(searchTerm) || rCity.contains(searchTerm))) {
                         bestMatch = r;
                     }
                 }
@@ -141,7 +150,7 @@ public with sharing class AgentAction_CreateReservation {
             }
 
             if (restaurant == null) {
-                result.message = 'Restaurant not found or is not accepting reservations. Please check the restaurant name.';
+                result.message = 'Restaurant not found. Please share city and cuisine and I can suggest alternatives.';
                 results.add(result);
                 continue;
             }

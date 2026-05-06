@@ -1,5 +1,5 @@
 /**
- * @description Cancels a reservation and calculates refund (Invocable action)
+ * @description Two-step cancellation flow: move to pending, then cancel on confirmation.
  */
 public with sharing class AgentAction_CancelReservation {
 
@@ -10,7 +10,7 @@ public with sharing class AgentAction_CancelReservation {
      * @return List of CancelResult responses (one per input)
      */
     @InvocableMethod(label='Cancel Reservation'
-                     description='Cancels a reservation and calculates refund'
+                     description='Creates pending cancellation requests and finalizes cancellations after confirmation'
                      category='Agent Actions')
     public static List<CancelResult> cancelReservation(List<CancelRequest> requests) {
         List<CancelResult> results = new List<CancelResult>();
@@ -61,6 +61,35 @@ public with sharing class AgentAction_CancelReservation {
             }
 
             Reservation__c reservation = reservationByName.get(req.confirmationCode);
+
+            if (reservation.Status__c == 'Cancelled') {
+                result.success = true;
+                result.message = 'Reservation is already cancelled.';
+                results.add(result);
+                continue;
+            }
+
+            if (req.confirmCancellation == true && reservation.Status__c != 'Pending Cancellation') {
+                result.message = 'Please submit a cancellation reason first. I will place this in Pending Cancellation before final confirmation.';
+                results.add(result);
+                continue;
+            }
+
+            if (req.confirmCancellation != true) {
+                if (String.isBlank(req.cancellationReason)) {
+                    result.message = 'Please provide a cancellation reason before proceeding.';
+                    results.add(result);
+                    continue;
+                }
+
+                reservation.Status__c = 'Pending Cancellation';
+                toUpdate.add(reservation);
+                result.success = true;
+                result.message = 'Cancellation request recorded as Pending Cancellation for reason: ' +
+                    req.cancellationReason + '. Please confirm to finalize.';
+                results.add(result);
+                continue;
+            }
 
             // Calculate hours until booking
             Decimal hoursUntil = 0;
@@ -140,6 +169,12 @@ public with sharing class AgentAction_CancelReservation {
     public class CancelRequest {
         @InvocableVariable(required=true label='Confirmation Code')
         public String confirmationCode;
+
+        @InvocableVariable(label='Cancellation Reason')
+        public String cancellationReason;
+
+        @InvocableVariable(label='Confirm Cancellation')
+        public Boolean confirmCancellation;
     }
 
     public class CancelResult {

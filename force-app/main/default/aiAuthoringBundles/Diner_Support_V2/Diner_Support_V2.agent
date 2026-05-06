@@ -1,5 +1,5 @@
 system:
-    instructions: "You are the Diner Support Agent V2. Help diners find restaurants, manage reservations, and answer policy questions. Be concise, professional, and proactive. Confirm required details before calling actions. Reuse known context such as userEmail and lastConfirmationCode to reduce repeated questions."
+    instructions: "You are the Diner Support Agent V2 focused on diner issue resolution and service recovery. Prioritize resolving user problems over transactional speed. Always clarify intent and missing details before calling actions. Behavioral policy: (1) acknowledge pain points briefly and empathetically, (2) gather only required details, (3) offer clear options, (4) execute the correct action, (5) confirm outcome and next step. For discovery: always ask city + cuisine first, show options with rating/price/address, and suggest the best booking option. For modification: verify diner identity (first name, last name, phone, optional email), list reservations, then ask exactly what to change. For cancellation: collect reason, place Pending Cancellation, ask for final confirmation, then complete cancellation. For unresolved issues or repeated failures, escalate by creating a Case. Before ending any conversation, log interaction details with close_interaction."
     messages:
         welcome: "Hello! I'm the Diner Support Agent V2. I can help you find a great place to eat or manage your bookings. How can I help you today?"
         error: "I'm sorry, I encountered an issue. Please try again or ask for a human agent."
@@ -16,6 +16,10 @@ variables:
         description: "The email address of the current user"
     lastConfirmationCode: mutable string = ""
         description: "The confirmation code of the most recently created or updated reservation"
+    preferredCity: mutable string = ""
+        description: "User preferred city for restaurant discovery"
+    preferredCuisine: mutable string = ""
+        description: "User preferred cuisine for restaurant discovery"
 
 language:
     default_locale: "en_US"
@@ -27,15 +31,19 @@ start_agent agent_router:
             go_to_inquiry: @utils.transition to @subagent.restaurant_inquiry
             go_to_booking: @utils.transition to @subagent.booking_management
             go_to_knowledge: @utils.transition to @subagent.knowledge_retrieval
+            go_to_service_recovery: @utils.transition to @subagent.service_recovery
             go_to_escalation: @utils.transition to @subagent.escalation
+            go_to_closure: @utils.transition to @subagent.conversation_closure
 
 subagent restaurant_inquiry:
     label: "Restaurant Inquiry"
     description: "Search and provide info about restaurants"
     reasoning:
         instructions: ->
-            | Use the get_restaurant_info tool to find restaurants based on user criteria.
-            | If the user asks for recommendations, search for highly rated restaurants in their preferred cuisine.
+            | Ask for city and cuisine before searching.
+            | Use get_restaurant_info with city and cuisine.
+            | If no exact cuisine match exists, show top options in the same city and suggest booking one.
+            | Always present restaurant list with: name, city, cuisine, price, rating, and one upsell suggestion.
         actions:
             search_restaurants: @actions.get_restaurant_info
                 with cuisine = ...
@@ -44,7 +52,7 @@ subagent restaurant_inquiry:
 
     actions:
         get_restaurant_info:
-            description: "Searches for restaurants based on user criteria such as name, cuisine, location, or price."
+            description: "Searches restaurants by cuisine and city, with city fallback options for upsell."
             label: "Get Restaurant Info"
             target: "apex://AgentAction_GetRestaurantInfo"
             inputs:
@@ -61,8 +69,11 @@ subagent restaurant_inquiry:
                     label: "Price Range"
                     is_required: False
             outputs:
-                results: string
-                    label: "Search Results"
+                restaurants: list[string]
+                    label: "Restaurant Summaries"
+                    is_displayable: True
+                message: string
+                    label: "Status Message"
                     is_displayable: True
 
 subagent booking_management:
@@ -70,12 +81,17 @@ subagent booking_management:
     description: "Manage reservations (create, update, cancel, view)"
     reasoning:
         instructions: ->
-            | Help users manage their reservations. 
+            | Help users manage their reservations while minimizing friction.
             | For creating a reservation, ensure you have restaurant name, requested date/time, party size, and user email.
-            | For updating or cancelling, ask for the confirmation code if not already provided.
+            | For updating reservations, first collect diner first name, last name, and phone, then fetch reservations and ask what to update.
+            | For cancellation, ask cancellation reason and explicit confirmation before finalizing.
+            | If user asks for alternatives because a request fails, route to restaurant inquiry and suggest nearby options.
         actions:
             list_reservations: @actions.get_reservations
                 with userEmail = ...
+                with firstName = ...
+                with lastName = ...
+                with phone = ...
             create_booking: @actions.create_reservation
                 with restaurantName = ...
                 with requestedDateTime = ...
@@ -87,6 +103,8 @@ subagent booking_management:
                 with newPartySize = ...
             cancel_booking: @actions.cancel_reservation
                 with confirmationCode = ...
+                with cancellationReason = ...
+                with confirmCancellation = ...
 
     actions:
         get_reservations:
@@ -97,7 +115,19 @@ subagent booking_management:
                 userEmail: string
                     description: "Diner email address"
                     label: "User Email"
-                    is_required: True
+                    is_required: False
+                firstName: string
+                    description: "Diner first name"
+                    label: "First Name"
+                    is_required: False
+                lastName: string
+                    description: "Diner last name"
+                    label: "Last Name"
+                    is_required: False
+                phone: string
+                    description: "Diner phone number"
+                    label: "Phone"
+                    is_required: False
             outputs:
                 reservations: string
                     label: "Reservations"
@@ -157,7 +187,7 @@ subagent booking_management:
                     is_displayable: True
 
         cancel_reservation:
-            description: "Cancels an existing restaurant reservation."
+            description: "Creates pending cancellation and finalizes only after confirmation."
             label: "Cancel Reservation"
             target: "apex://AgentAction_CancelReservation"
             inputs:
@@ -165,6 +195,14 @@ subagent booking_management:
                     description: "The confirmation code of the reservation"
                     label: "Confirmation Code"
                     is_required: True
+                cancellationReason: string
+                    description: "Reason for cancellation"
+                    label: "Cancellation Reason"
+                    is_required: False
+                confirmCancellation: boolean
+                    description: "Set true to finalize cancellation"
+                    label: "Confirm Cancellation"
+                    is_required: False
             outputs:
                 success: boolean
                     label: "Success"
@@ -205,10 +243,12 @@ subagent escalation:
     description: "Escalate to a human agent"
     reasoning:
         instructions: ->
-            | If the user asks for a human or if you cannot resolve their issue, escalate the conversation.
+            | If the user asks for a human, has repeated service issues, or resolution is blocked, escalate the conversation.
+            | Include a concise subject and conversation summary to reduce handoff friction.
         actions:
             escalate: @actions.escalate_to_human
                 with userEmail = ...
+                with subject = ...
                 with conversationSummary = ...
                 with issueType = ...
 
@@ -238,6 +278,168 @@ subagent escalation:
                 caseNumber: string
                     label: "Case Number"
                     is_displayable: True
+                message: string
+                    label: "Status Message"
+                    is_displayable: True
+
+subagent service_recovery:
+    label: "Service Recovery"
+    description: "Resolve diner complaints and service failures"
+    reasoning:
+        instructions: ->
+            | Use this flow when diner reports bad experience, failed booking, wrong reservation, long wait, or repeated issues.
+            | First acknowledge the issue, then gather: diner identity, what went wrong, desired resolution.
+            | If reservation context exists, fetch reservation details first.
+            | Offer remedies: update reservation, cancellation assistance, alternative restaurant options, or immediate escalation.
+            | Escalate when the diner requests manager/human or issue remains unresolved.
+        actions:
+            fetch_reservation_context: @actions.get_reservations
+                with userEmail = ...
+                with firstName = ...
+                with lastName = ...
+                with phone = ...
+            suggest_alternatives: @actions.get_restaurant_info
+                with city = ...
+                with cuisine = ...
+                with priceRange = ...
+            escalate_recovery_case: @actions.escalate_to_human
+                with userEmail = ...
+                with subject = ...
+                with conversationSummary = ...
+                with issueType = ...
+
+    actions:
+        get_reservations:
+            description: "Fetch reservations to support complaint handling."
+            label: "Get Reservations (Recovery)"
+            target: "apex://AgentAction_GetReservations"
+            inputs:
+                userEmail: string
+                    description: "Diner email"
+                    label: "User Email"
+                    is_required: False
+                firstName: string
+                    description: "Diner first name"
+                    label: "First Name"
+                    is_required: False
+                lastName: string
+                    description: "Diner last name"
+                    label: "Last Name"
+                    is_required: False
+                phone: string
+                    description: "Diner phone"
+                    label: "Phone"
+                    is_required: False
+            outputs:
+                reservations: string
+                    label: "Reservations"
+                    is_displayable: True
+        get_restaurant_info:
+            description: "Find alternatives to recover diner experience."
+            label: "Get Restaurant Alternatives"
+            target: "apex://AgentAction_GetRestaurantInfo"
+            inputs:
+                cuisine: string
+                    description: "Preferred cuisine"
+                    label: "Cuisine"
+                    is_required: False
+                city: string
+                    description: "Preferred city"
+                    label: "City"
+                    is_required: False
+                priceRange: string
+                    description: "Preferred price range"
+                    label: "Price Range"
+                    is_required: False
+            outputs:
+                restaurants: list[string]
+                    label: "Restaurant Summaries"
+                    is_displayable: True
+        escalate_to_human:
+            description: "Escalate unresolved complaint with full context."
+            label: "Escalate Recovery Case"
+            target: "apex://AgentAction_EscalateToHuman"
+            inputs:
+                userEmail: string
+                    description: "Diner email"
+                    label: "User Email"
+                    is_required: True
+                subject: string
+                    description: "Case subject"
+                    label: "Subject"
+                    is_required: False
+                conversationSummary: string
+                    description: "Issue summary"
+                    label: "Conversation Summary"
+                    is_required: False
+                issueType: string
+                    description: "Issue type"
+                    label: "Issue Type"
+                    is_required: False
+            outputs:
+                caseNumber: string
+                    label: "Case Number"
+                    is_displayable: True
+
+subagent conversation_closure:
+    label: "Conversation Closure"
+    description: "Close and log conversation details"
+    reasoning:
+        instructions: ->
+            | Before ending the conversation, summarize what was done.
+            | Call close_interaction to persist transcript-level details to Agent_Interaction__c.
+        actions:
+            log_and_close: @actions.close_interaction
+                with conversationId = ...
+                with startDateTime = ...
+                with endDateTime = ...
+                with transcript = ...
+                with topicsDiscussed = ...
+                with resolutionType = ...
+                with sentimentScore = ...
+                with reservationId = ...
+
+    actions:
+        close_interaction:
+            description: "Stores conversation closure details in Agent Interaction."
+            label: "Close Interaction"
+            target: "apex://AgentAction_CloseInteraction"
+            inputs:
+                conversationId: string
+                    description: "Conversation identifier"
+                    label: "Conversation Id"
+                    is_required: True
+                startDateTime: string
+                    description: "Conversation start datetime"
+                    label: "Start Date Time"
+                    is_required: False
+                endDateTime: string
+                    description: "Conversation end datetime"
+                    label: "End Date Time"
+                    is_required: False
+                transcript: string
+                    description: "Conversation transcript"
+                    label: "Transcript"
+                    is_required: False
+                topicsDiscussed: string
+                    description: "Topics covered"
+                    label: "Topics Discussed"
+                    is_required: False
+                resolutionType: string
+                    description: "Resolved, escalated, cancelled, modified, etc."
+                    label: "Resolution Type"
+                    is_required: False
+                sentimentScore: number
+                    description: "Estimated customer sentiment score"
+                    label: "Sentiment Score"
+                    is_required: False
+                reservationId: string
+                    description: "Related reservation id, if any"
+                    label: "Reservation Id"
+                    is_required: False
+            outputs:
+                success: boolean
+                    label: "Success"
                 message: string
                     label: "Status Message"
                     is_displayable: True

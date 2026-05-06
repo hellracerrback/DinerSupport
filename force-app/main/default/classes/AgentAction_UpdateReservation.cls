@@ -59,17 +59,38 @@ public with sharing class AgentAction_UpdateReservation {
 
             Reservation__c reservation = reservationByName.get(req.confirmationCode);
 
+            if (reservation.Status__c == 'Cancelled' || reservation.Status__c == 'No-Show') {
+                result.message = 'This reservation cannot be modified because it is ' + reservation.Status__c + '.';
+                results.add(result);
+                continue;
+            }
+            if (reservation.Status__c == 'Pending Cancellation') {
+                result.message = 'This reservation is currently pending cancellation. Please confirm cancellation or request a human agent.';
+                results.add(result);
+                continue;
+            }
+
             // Save old values
             result.oldDateTime = reservation.Booking_DateTime__c;
             result.oldPartySize = reservation.Party_Size__c;
 
             Boolean changed = false;
             if (req.newDateTime != null && req.newDateTime != reservation.Booking_DateTime__c) {
+                if (req.newDateTime <= System.now()) {
+                    result.message = 'New reservation date/time must be in the future.';
+                    results.add(result);
+                    continue;
+                }
                 reservation.Booking_DateTime__c = req.newDateTime;
                 changed = true;
                 result.newDateTime = req.newDateTime;
             }
             if (req.newPartySize != null && req.newPartySize != reservation.Party_Size__c) {
+                if (req.newPartySize <= 0) {
+                    result.message = 'New party size must be greater than zero.';
+                    results.add(result);
+                    continue;
+                }
                 reservation.Party_Size__c = req.newPartySize;
                 changed = true;
             }

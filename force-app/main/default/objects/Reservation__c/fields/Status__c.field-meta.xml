@@ -26,6 +26,11 @@
                 <label>Cancelled</label>
             </value>
             <value>
+                <fullName>Pending Cancellation</fullName>
+                <default>false</default>
+                <label>Pending Cancellation</label>
+            </value>
+            <value>
                 <fullName>No-Show</fullName>
                 <default>false</default>
                 <label>No-Show</label>
