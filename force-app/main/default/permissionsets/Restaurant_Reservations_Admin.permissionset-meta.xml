@@ -384,7 +384,7 @@
         <allowRead>true</allowRead>
         <modifyAllRecords>true</modifyAllRecords>
         <object>Agent_Interaction__c</object>
-        <viewAllFields>false</viewAllFields>
+        
         <viewAllRecords>true</viewAllRecords>
     </objectPermissions>
     <objectPermissions>
@@ -394,7 +394,7 @@
         <allowRead>true</allowRead>
         <modifyAllRecords>true</modifyAllRecords>
         <object>Diner__c</object>
-        <viewAllFields>false</viewAllFields>
+        
         <viewAllRecords>true</viewAllRecords>
     </objectPermissions>
     <objectPermissions>
@@ -404,7 +404,7 @@
         <allowRead>true</allowRead>
         <modifyAllRecords>true</modifyAllRecords>
         <object>Knowledge__kav</object>
-        <viewAllFields>false</viewAllFields>
+        
         <viewAllRecords>true</viewAllRecords>
     </objectPermissions>
     <objectPermissions>
@@ -414,7 +414,7 @@
         <allowRead>true</allowRead>
         <modifyAllRecords>true</modifyAllRecords>
         <object>Reservation__c</object>
-        <viewAllFields>false</viewAllFields>
+        
         <viewAllRecords>true</viewAllRecords>
     </objectPermissions>
     <objectPermissions>
@@ -424,7 +424,7 @@
         <allowRead>true</allowRead>
         <modifyAllRecords>true</modifyAllRecords>
         <object>Restaurant__c</object>
-        <viewAllFields>false</viewAllFields>
+        
         <viewAllRecords>true</viewAllRecords>
     </objectPermissions>
     <tabSettings>

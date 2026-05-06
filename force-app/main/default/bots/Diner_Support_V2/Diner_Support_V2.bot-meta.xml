@@ -3,13 +3,13 @@
     <agentDSLEnabled>true</agentDSLEnabled>
     <agentType>EinsteinServiceAgent</agentType>
     <botMlDomain>
-        <label>Diner Support V2</label>
+        <label>Intelligent Diner Support Agent</label>
         <name>Diner_Support_V2</name>
     </botMlDomain>
     <botSource>None</botSource>
     <botUser>intelligent_diner_support_agent@00dqy00000p20sz87585760.ext</botUser>
-    <description>V2 AI agent with improved proactivity for restaurant management.</description>
-    <label>Diner Support V2</label>
+    <description>Intelligent AI agent for restaurant discovery, reservation management, and service recovery.</description>
+    <label>Intelligent Diner Support Agent</label>
     <logPrivateConversationData>false</logPrivateConversationData>
     <richContentEnabled>true</richContentEnabled>
     <sessionTimeout>0</sessionTimeout>

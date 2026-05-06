@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <GenAiPlannerBundle xmlns="http://soap.sforce.com/2006/04/metadata">
-    <description>V2 AI agent with improved proactivity for restaurant management.</description>
+    <description>Intelligent AI agent for restaurant discovery, reservation management, and service recovery.</description>
     <localTopicLinks>
         <genAiPluginName>booking_management_16jQy000001lSrV</genAiPluginName>
     </localTopicLinks>
@@ -19,7 +19,7 @@
         <description>Escalate to human.</description>
         <developerName>escalation_16jQy000001lSrV</developerName>
         <genAiPluginInstructions>
-            <description>You are the Diner Support Agent V2. Your job is to help diners find restaurants and manage their reservations. When a user asks about a restaurant, ALWAYS use the search tools immediately. Be proactive and helpful.</description>
+            <description>You are the Intelligent Diner Support Agent. Your job is to help diners find restaurants and manage their reservations. When a user asks about a restaurant, ALWAYS use the search tools immediately. Be proactive and helpful.</description>
             <developerName>instruction0_179Qy000002h5Um</developerName>
             <language>en_US</language>
             <masterLabel>instruction0_179Qy000002h5Um</masterLabel>
@@ -50,7 +50,7 @@
         <description>Greet the user and route to inquiry or booking.</description>
         <developerName>welcome_16jQy000001lSrV</developerName>
         <genAiPluginInstructions>
-            <description>You are the Diner Support Agent V2. Your job is to help diners find restaurants and manage their reservations. When a user asks about a restaurant, ALWAYS use the search tools immediately. Be proactive and helpful.</description>
+            <description>You are the Intelligent Diner Support Agent. Your job is to help diners find restaurants and manage their reservations. When a user asks about a restaurant, ALWAYS use the search tools immediately. Be proactive and helpful.</description>
             <developerName>instruction0_179Qy000002h5Uk</developerName>
             <language>en_US</language>
             <masterLabel>instruction0_179Qy000002h5Uk</masterLabel>
@@ -67,7 +67,7 @@
         <description>Manage reservations.</description>
         <developerName>booking_management_16jQy000001lSrV</developerName>
         <genAiPluginInstructions>
-            <description>You are the Diner Support Agent V2. Your job is to help diners find restaurants and manage their reservations. When a user asks about a restaurant, ALWAYS use the search tools immediately. Be proactive and helpful.</description>
+            <description>You are the Intelligent Diner Support Agent. Your job is to help diners find restaurants and manage their reservations. When a user asks about a restaurant, ALWAYS use the search tools immediately. Be proactive and helpful.</description>
             <developerName>instruction0_179Qy000002h5Ul</developerName>
             <language>en_US</language>
             <masterLabel>instruction0_179Qy000002h5Ul</masterLabel>
@@ -140,7 +140,7 @@
         <description>Search and provide info about restaurants.</description>
         <developerName>restaurant_inquiry_16jQy000001lSrV</developerName>
         <genAiPluginInstructions>
-            <description>You are the Diner Support Agent V2. Your job is to help diners find restaurants and manage their reservations. When a user asks about a restaurant, ALWAYS use the search tools immediately. Be proactive and helpful.</description>
+            <description>You are the Intelligent Diner Support Agent. Your job is to help diners find restaurants and manage their reservations. When a user asks about a restaurant, ALWAYS use the search tools immediately. Be proactive and helpful.</description>
             <developerName>instruction0_179Qy000002h5Uj</developerName>
             <language>en_US</language>
             <masterLabel>instruction0_179Qy000002h5Uj</masterLabel>
@@ -165,7 +165,7 @@
         <masterLabel>Restaurant Inquiry</masterLabel>
         <pluginType>Topic</pluginType>
     </localTopics>
-    <masterLabel>Diner Support V2</masterLabel>
+    <masterLabel>Intelligent Diner Support Agent</masterLabel>
     <plannerSurfaces>
         <adaptiveResponseAllowed>true</adaptiveResponseAllowed>
         <callRecordingAllowed>false</callRecordingAllowed>

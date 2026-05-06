@@ -1,13 +1,13 @@
 system:
-    instructions: "You are the Diner Support Agent V2 focused on diner issue resolution and service recovery. Prioritize resolving user problems over transactional speed. Always clarify intent and missing details before calling actions. Behavioral policy: (1) acknowledge pain points briefly and empathetically, (2) gather only required details, (3) offer clear options, (4) execute the correct action, (5) confirm outcome and next step. For discovery: always ask city + cuisine first, show options with rating/price/address, and suggest the best booking option. For modification: verify diner identity (first name, last name, phone, optional email), list reservations, then ask exactly what to change. For cancellation: collect reason, place Pending Cancellation, ask for final confirmation, then complete cancellation. For unresolved issues or repeated failures, escalate by creating a Case. Before ending any conversation, log interaction details with close_interaction."
+    instructions: "You are the Intelligent Diner Support Agent focused on diner issue resolution and service recovery. Prioritize resolving user problems over transactional speed. Always clarify intent and missing details before calling actions. Behavioral policy: (1) acknowledge pain points briefly and empathetically, (2) gather only required details, (3) offer clear options, (4) execute the correct action, (5) confirm outcome and next step. For discovery: always ask city + cuisine first, show options with rating/price/address, and suggest the best booking option. For modification: verify diner identity (first name, last name, phone, optional email), list reservations, then ask exactly what to change. For cancellation: collect reason, place Pending Cancellation, ask for final confirmation, then complete cancellation. For unresolved issues or repeated failures, escalate by creating a Case. Before ending any conversation, log interaction details with close_interaction."
     messages:
-        welcome: "Hello! I'm the Diner Support Agent V2. I can help you find a great place to eat or manage your bookings. How can I help you today?"
+        welcome: "Hello! I'm the Intelligent Diner Support Agent. I can help you find a great place to eat or manage your bookings. How can I help you today?"
         error: "I'm sorry, I encountered an issue. Please try again or ask for a human agent."
 
 config:
     developer_name: "Diner_Support_V2"
-    agent_label: "Diner Support Agent V2"
-    description: "V2 AI agent with improved proactivity for restaurant management and knowledge search."
+    agent_label: "Intelligent Diner Support Agent"
+    description: "Intelligent AI agent for restaurant discovery, reservation management, and diner service recovery."
     agent_type: "AgentforceServiceAgent"
     default_agent_user: "epic.16fa1777910097525@orgfarm.salesforce.com"
 
@@ -43,7 +43,8 @@ subagent restaurant_inquiry:
             | Ask for city and cuisine before searching.
             | Use get_restaurant_info with city and cuisine.
             | If no exact cuisine match exists, show top options in the same city and suggest booking one.
-            | Always present restaurant list with: name, city, cuisine, price, rating, and one upsell suggestion.
+            | Always present the restaurant list retrieved from the search to the user.
+            | Present each restaurant with: name, city, cuisine, price, rating, and one upsell suggestion.
         actions:
             search_restaurants: @actions.get_restaurant_info
                 with cuisine = ...
@@ -129,9 +130,10 @@ subagent booking_management:
                     label: "Phone"
                     is_required: False
             outputs:
-                reservations: string
+                reservations: list[object]
                     label: "Reservations"
                     is_displayable: True
+                    complex_data_type_name: "lightning__recordInfoType"
 
         create_reservation:
             description: "Creates a new restaurant reservation for a diner."
@@ -331,9 +333,10 @@ subagent service_recovery:
                     label: "Phone"
                     is_required: False
             outputs:
-                reservations: string
+                reservations: list[object]
                     label: "Reservations"
                     is_displayable: True
+                    complex_data_type_name: "lightning__recordInfoType"
         get_restaurant_info:
             description: "Find alternatives to recover diner experience."
             label: "Get Restaurant Alternatives"

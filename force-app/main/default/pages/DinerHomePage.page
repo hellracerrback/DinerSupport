@@ -1,6 +1,6 @@
 <apex:page showHeader="false" sidebar="false" standardStylesheets="false" docType="html-5.0" controller="AgentAction_GetRestaurantInfo">
     <head>
-        <title>Intelligent Diner Support</title>
+        <title>Intelligent Diner Support Agent</title>
         <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
         <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet" />
         <style>
@@ -204,7 +204,7 @@
         <div class="animated-bg"></div>
         
         <header>
-            <div class="logo">DinerSupport AI</div>
+            <div class="logo">Intelligent Diner Support Agent</div>
             <nav>
                 <a href="#" class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.9rem;">Sign In</a>
             </nav>
@@ -212,8 +212,8 @@
 
         <main>
             <div class="hero-content">
-                <h1>The Future of <br/>Dining Experiences</h1>
-                <p class="subtitle">Discover exceptional restaurants, manage your reservations seamlessly, and enjoy AI-powered assistance tailored just for you.</p>
+                <h1>Intelligent Diner <br/>Support Agent</h1>
+                <p class="subtitle">Resolve dining issues quickly, discover great restaurants by city and cuisine, and manage bookings end to end with AI-assisted support.</p>
                 <div class="cta-container">
                     <a href="#" class="btn btn-primary">Find a Restaurant</a>
                     <a href="#" class="btn btn-secondary">My Bookings</a>
@@ -240,7 +240,7 @@
         </main>
 
         <footer>
-            &copy; 2026 DinerSupport AI. Built on Salesforce Agentforce.
+            &copy; 2026 Intelligent Diner Support Agent. Built on Salesforce Agentforce.
         </footer>
 
         <script type='text/javascript'>

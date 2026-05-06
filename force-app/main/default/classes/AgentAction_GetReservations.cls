@@ -101,7 +101,7 @@ public with sharing class AgentAction_GetReservations {
         if (!dinerIdsToQuery.isEmpty()) {
             for (Reservation__c r : [
                 SELECT Id, Name, Confirmation_Code__c,
-                       Restaurant__c, Restaurant__r.Name, Restaurant__r.City_Test__c,
+                       Restaurant__c, Restaurant__r.Name, Restaurant__r.City__c,
                        Restaurant__r.Cuisine_Type__c, Restaurant__r.Phone__c,
                        Booking_DateTime__c, Party_Size__c,
                        Status__c, Special_Requests__c,

@@ -12,7 +12,7 @@ public with sharing class AgentAction_GetRestaurantInfo {
         }
 
         List<Restaurant__c> allRestaurants = [
-            SELECT Id, Name, Cuisine_Type__c, City_Test__c, Address__c, Phone__c,
+            SELECT Id, Name, Cuisine_Type__c, City__c, Address__c, Phone__c,
                    Price_Range__c, Avg_Rating__c, Total_Capacity__c,
                    Accepts_Walkins__c, Dietary_Accommodations__c,
                    Menu_URL__c, Reservation_Policy__c,
@@ -43,7 +43,7 @@ public with sharing class AgentAction_GetRestaurantInfo {
                     continue;
                 }
 
-                String rCity = normalize(r.City_Test__c);
+                String rCity = normalize(r.City__c);
                 String rCuisine = normalize(r.Cuisine_Type__c);
                 String rPrice = normalize(r.Price_Range__c);
                 String joined = String.join(
@@ -92,7 +92,7 @@ public with sharing class AgentAction_GetRestaurantInfo {
                     res.restaurantId       = f.Id;
                     res.restaurantName     = f.Name;
                     res.cuisineType        = f.Cuisine_Type__c;
-                    res.city               = f.City_Test__c;
+                    res.city               = f.City__c;
                     res.address            = f.Address__c;
                     res.phone              = f.Phone__c;
                     res.priceRange         = f.Price_Range__c;
@@ -115,7 +115,7 @@ public with sharing class AgentAction_GetRestaurantInfo {
         List<String> parts = new List<String>();
         parts.add('Name: ' + r.Name);
         if (!String.isBlank(r.Cuisine_Type__c))         parts.add('Cuisine: ' + r.Cuisine_Type__c);
-        if (!String.isBlank(r.City_Test__c))            parts.add('City: ' + r.City_Test__c);
+        if (!String.isBlank(r.City__c))            parts.add('City: ' + r.City__c);
         if (!String.isBlank(r.Price_Range__c))           parts.add('Price: ' + r.Price_Range__c);
         if (r.Avg_Rating__c != null)                     parts.add('Rating: ' + r.Avg_Rating__c + '/5');
         if (!String.isBlank(r.Partner_Tier__c))         parts.add('Tier: ' + r.Partner_Tier__c);

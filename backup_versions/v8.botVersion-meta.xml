@@ -5,7 +5,7 @@
     <botDialogs>
         <botSteps>
             <botMessages>
-                <message>Hello! I&apos;m the Diner Support Agent V2. I can help you find a great place to eat or manage your bookings. Which restaurant can I look up for you?</message>
+                <message>Hello! I&apos;m the Intelligent Diner Support Agent. I can help you find a great place to eat or manage your bookings. Which restaurant can I look up for you?</message>
                 <messageIdentifier>d54dd91a-2483-4f5a-98dc-7d112682cfee</messageIdentifier>
             </botMessages>
             <stepIdentifier>f183464c-061e-44dd-b9a5-8f6254329870</stepIdentifier>
