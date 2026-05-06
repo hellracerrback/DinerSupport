@@ -1,5 +1,5 @@
 system:
-    instructions: "You are the Diner Support Agent V2. Your job is to help diners find restaurants and manage their reservations. Be proactive, professional, and helpful. Always try to resolve the user's request using the available tools."
+    instructions: "You are the Diner Support Agent V2. Help diners find restaurants, manage reservations, and answer policy questions. Be concise, professional, and proactive. Confirm required details before calling actions. Reuse known context such as userEmail and lastConfirmationCode to reduce repeated questions."
     messages:
         welcome: "Hello! I'm the Diner Support Agent V2. I can help you find a great place to eat or manage your bookings. How can I help you today?"
         error: "I'm sorry, I encountered an issue. Please try again or ask for a human agent."
@@ -71,19 +71,19 @@ subagent booking_management:
     reasoning:
         instructions: ->
             | Help users manage their reservations. 
-            | For creating a reservation, ensure you have the restaurant name, date, time, party size, and user email.
+            | For creating a reservation, ensure you have restaurant name, requested date/time, party size, and user email.
             | For updating or cancelling, ask for the confirmation code if not already provided.
         actions:
             list_reservations: @actions.get_reservations
-                with email = ...
+                with userEmail = ...
             create_booking: @actions.create_reservation
                 with restaurantName = ...
-                with bookingDateTime = ...
+                with requestedDateTime = ...
                 with partySize = ...
-                with email = ...
+                with userEmail = ...
             modify_booking: @actions.update_reservation
                 with confirmationCode = ...
-                with newBookingDateTime = ...
+                with newDateTime = ...
                 with newPartySize = ...
             cancel_booking: @actions.cancel_reservation
                 with confirmationCode = ...
@@ -94,9 +94,9 @@ subagent booking_management:
             label: "Get Reservations"
             target: "apex://AgentAction_GetReservations"
             inputs:
-                email: string
+                userEmail: string
                     description: "Diner email address"
-                    label: "Email"
+                    label: "User Email"
                     is_required: True
             outputs:
                 reservations: string
@@ -112,17 +112,17 @@ subagent booking_management:
                     description: "Name of the restaurant"
                     label: "Restaurant Name"
                     is_required: True
-                bookingDateTime: string
-                    description: "Date and time of the reservation"
-                    label: "Date Time"
+                requestedDateTime: string
+                    description: "Requested date and time of the reservation"
+                    label: "Requested Date Time"
                     is_required: True
                 partySize: number
                     description: "Number of guests"
                     label: "Party Size"
                     is_required: True
-                email: string
+                userEmail: string
                     description: "Diner email address"
-                    label: "Email"
+                    label: "User Email"
                     is_required: True
             outputs:
                 confirmationCode: string
@@ -141,7 +141,7 @@ subagent booking_management:
                     description: "The confirmation code of the reservation"
                     label: "Confirmation Code"
                     is_required: True
-                newBookingDateTime: string
+                newDateTime: string
                     description: "New date and time"
                     label: "New Date Time"
                     is_required: False
@@ -208,8 +208,9 @@ subagent escalation:
             | If the user asks for a human or if you cannot resolve their issue, escalate the conversation.
         actions:
             escalate: @actions.escalate_to_human
-                with email = ...
-                with reason = ...
+                with userEmail = ...
+                with conversationSummary = ...
+                with issueType = ...
 
     actions:
         escalate_to_human:
@@ -217,13 +218,21 @@ subagent escalation:
             label: "Escalate To Human"
             target: "apex://AgentAction_EscalateToHuman"
             inputs:
-                email: string
+                userEmail: string
                     description: "Diner email"
-                    label: "Email"
+                    label: "User Email"
+                    is_required: True
+                subject: string
+                    description: "Case subject"
+                    label: "Subject"
                     is_required: False
-                reason: string
-                    description: "Reason for escalation"
-                    label: "Reason"
+                conversationSummary: string
+                    description: "Conversation details to pass to the human agent"
+                    label: "Conversation Summary"
+                    is_required: False
+                issueType: string
+                    description: "Issue classification"
+                    label: "Issue Type"
                     is_required: False
             outputs:
                 caseNumber: string

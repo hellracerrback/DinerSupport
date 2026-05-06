@@ -30,7 +30,6 @@ graph TD
 
 - `userEmail` (string) — The email address of the current user.
 - `lastConfirmationCode` (string) — The confirmation code of the most recently created or updated reservation.
-- `lastRestaurantList` (list[string]) — The list of formatted restaurant summaries from the last search.
 
 ## Actions & Backing Logic
 
@@ -65,6 +64,10 @@ graph TD
 ## Gating Logic
 
 - `update_reservation` and `cancel_reservation` are `available when @variables.userEmail != ""` or when a `confirmationCode` is provided.
+- `get_reservations` expects `userEmail`.
+- `create_reservation` expects `restaurantName`, `requestedDateTime`, `partySize`, and `userEmail`.
+- `update_reservation` expects `confirmationCode` and optional `newDateTime` / `newPartySize`.
+- `escalate_to_human` expects `userEmail` with optional `subject`, `conversationSummary`, and `issueType`.
 
 ## Architecture Pattern
 
