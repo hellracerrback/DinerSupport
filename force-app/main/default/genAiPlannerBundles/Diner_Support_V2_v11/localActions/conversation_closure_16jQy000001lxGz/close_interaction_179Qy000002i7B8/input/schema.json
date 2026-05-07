@@ -1,0 +1,63 @@
+{
+  "required" : [ "conversationId" ],
+  "unevaluatedProperties" : false,
+  "properties" : {
+    "conversationId" : {
+      "title" : "Conversation Id",
+      "description" : "Conversation identifier",
+      "lightning:type" : "lightning__textType",
+      "lightning:isPII" : false,
+      "copilotAction:isUserInput" : false
+    },
+    "endDateTime" : {
+      "title" : "End Date Time",
+      "description" : "Conversation end datetime",
+      "lightning:type" : "lightning__textType",
+      "lightning:isPII" : false,
+      "copilotAction:isUserInput" : false
+    },
+    "reservationId" : {
+      "title" : "Reservation Id",
+      "description" : "Related reservation id, if any",
+      "lightning:type" : "lightning__textType",
+      "lightning:isPII" : false,
+      "copilotAction:isUserInput" : false
+    },
+    "resolutionType" : {
+      "title" : "Resolution Type",
+      "description" : "Resolved, escalated, cancelled, modified, etc.",
+      "lightning:type" : "lightning__textType",
+      "lightning:isPII" : false,
+      "copilotAction:isUserInput" : false
+    },
+    "sentimentScore" : {
+      "title" : "Sentiment Score",
+      "description" : "Estimated customer sentiment score",
+      "lightning:type" : "lightning__numberType",
+      "lightning:isPII" : false,
+      "copilotAction:isUserInput" : false
+    },
+    "startDateTime" : {
+      "title" : "Start Date Time",
+      "description" : "Conversation start datetime",
+      "lightning:type" : "lightning__textType",
+      "lightning:isPII" : false,
+      "copilotAction:isUserInput" : false
+    },
+    "topicsDiscussed" : {
+      "title" : "Topics Discussed",
+      "description" : "Topics covered",
+      "lightning:type" : "lightning__textType",
+      "lightning:isPII" : false,
+      "copilotAction:isUserInput" : false
+    },
+    "transcript" : {
+      "title" : "Transcript",
+      "description" : "Conversation transcript",
+      "lightning:type" : "lightning__textType",
+      "lightning:isPII" : false,
+      "copilotAction:isUserInput" : false
+    }
+  },
+  "lightning:type" : "lightning__objectType"
+}

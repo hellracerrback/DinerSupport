@@ -1,0 +1,28 @@
+{
+  "required" : [ "confirmationCode" ],
+  "unevaluatedProperties" : false,
+  "properties" : {
+    "cancellationReason" : {
+      "title" : "Cancellation Reason",
+      "description" : "Reason for cancellation",
+      "lightning:type" : "lightning__textType",
+      "lightning:isPII" : false,
+      "copilotAction:isUserInput" : false
+    },
+    "confirmationCode" : {
+      "title" : "Confirmation Code",
+      "description" : "The confirmation code of the reservation",
+      "lightning:type" : "lightning__textType",
+      "lightning:isPII" : false,
+      "copilotAction:isUserInput" : false
+    },
+    "confirmCancellation" : {
+      "title" : "Confirm Cancellation",
+      "description" : "Set true to finalize cancellation",
+      "lightning:type" : "lightning__booleanType",
+      "lightning:isPII" : false,
+      "copilotAction:isUserInput" : false
+    }
+  },
+  "lightning:type" : "lightning__objectType"
+}

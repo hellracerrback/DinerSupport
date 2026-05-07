@@ -8,7 +8,7 @@
     </botMlDomain>
     <botSource>None</botSource>
     <botUser>intelligent_diner_support_agent@00dqy00000p20sz87585760.ext</botUser>
-    <description>Intelligent AI agent for restaurant discovery, reservation management, and service recovery.</description>
+    <description>Intelligent AI agent for restaurant discovery, reservation management, and diner service recovery.</description>
     <label>Intelligent Diner Support Agent</label>
     <logPrivateConversationData>false</logPrivateConversationData>
     <richContentEnabled>true</richContentEnabled>

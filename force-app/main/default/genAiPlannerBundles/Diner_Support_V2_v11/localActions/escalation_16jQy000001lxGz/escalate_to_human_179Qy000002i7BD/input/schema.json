@@ -1,0 +1,35 @@
+{
+  "required" : [ "userEmail" ],
+  "unevaluatedProperties" : false,
+  "properties" : {
+    "conversationSummary" : {
+      "title" : "Conversation Summary",
+      "description" : "Conversation details to pass to the human agent",
+      "lightning:type" : "lightning__textType",
+      "lightning:isPII" : false,
+      "copilotAction:isUserInput" : false
+    },
+    "issueType" : {
+      "title" : "Issue Type",
+      "description" : "Issue classification",
+      "lightning:type" : "lightning__textType",
+      "lightning:isPII" : false,
+      "copilotAction:isUserInput" : false
+    },
+    "subject" : {
+      "title" : "Subject",
+      "description" : "Case subject",
+      "lightning:type" : "lightning__textType",
+      "lightning:isPII" : false,
+      "copilotAction:isUserInput" : false
+    },
+    "userEmail" : {
+      "title" : "User Email",
+      "description" : "Diner email",
+      "lightning:type" : "lightning__textType",
+      "lightning:isPII" : false,
+      "copilotAction:isUserInput" : false
+    }
+  },
+  "lightning:type" : "lightning__objectType"
+}

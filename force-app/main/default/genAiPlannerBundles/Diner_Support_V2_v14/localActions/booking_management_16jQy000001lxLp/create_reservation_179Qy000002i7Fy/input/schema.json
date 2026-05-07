@@ -1,0 +1,35 @@
+{
+  "required" : [ "restaurantName", "requestedDateTime", "partySize", "userEmail" ],
+  "unevaluatedProperties" : false,
+  "properties" : {
+    "partySize" : {
+      "title" : "Party Size",
+      "description" : "Number of guests",
+      "lightning:type" : "lightning__numberType",
+      "lightning:isPII" : false,
+      "copilotAction:isUserInput" : false
+    },
+    "requestedDateTime" : {
+      "title" : "Requested Date Time",
+      "description" : "Requested date and time of the reservation",
+      "lightning:type" : "lightning__dateTimeStringType",
+      "lightning:isPII" : false,
+      "copilotAction:isUserInput" : false
+    },
+    "restaurantName" : {
+      "title" : "Restaurant Name",
+      "description" : "Name of the restaurant",
+      "lightning:type" : "lightning__textType",
+      "lightning:isPII" : false,
+      "copilotAction:isUserInput" : false
+    },
+    "userEmail" : {
+      "title" : "User Email",
+      "description" : "Diner email address",
+      "lightning:type" : "lightning__textType",
+      "lightning:isPII" : false,
+      "copilotAction:isUserInput" : false
+    }
+  },
+  "lightning:type" : "lightning__objectType"
+}

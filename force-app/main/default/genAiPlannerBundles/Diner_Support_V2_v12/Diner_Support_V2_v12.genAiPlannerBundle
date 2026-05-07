@@ -1,0 +1,300 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<GenAiPlannerBundle xmlns="http://soap.sforce.com/2006/04/metadata">
+    <description>Intelligent AI agent for restaurant discovery, reservation management, and diner service recovery.</description>
+    <localTopicLinks>
+        <genAiPluginName>agent_router_16jQy000001lxIb</genAiPluginName>
+    </localTopicLinks>
+    <localTopicLinks>
+        <genAiPluginName>booking_management_16jQy000001lxIb</genAiPluginName>
+    </localTopicLinks>
+    <localTopicLinks>
+        <genAiPluginName>conversation_closure_16jQy000001lxIb</genAiPluginName>
+    </localTopicLinks>
+    <localTopicLinks>
+        <genAiPluginName>escalation_16jQy000001lxIb</genAiPluginName>
+    </localTopicLinks>
+    <localTopicLinks>
+        <genAiPluginName>knowledge_retrieval_16jQy000001lxIb</genAiPluginName>
+    </localTopicLinks>
+    <localTopicLinks>
+        <genAiPluginName>restaurant_inquiry_16jQy000001lxIb</genAiPluginName>
+    </localTopicLinks>
+    <localTopicLinks>
+        <genAiPluginName>service_recovery_16jQy000001lxIb</genAiPluginName>
+    </localTopicLinks>
+    <localTopics>
+        <fullName>restaurant_inquiry_16jQy000001lxIb</fullName>
+        <canEscalate>false</canEscalate>
+        <description>Search and provide info about restaurants</description>
+        <developerName>restaurant_inquiry_16jQy000001lxIb</developerName>
+        <genAiPluginInstructions>
+            <description>You are the Intelligent Diner Support Agent focused on diner issue resolution and service recovery. Prioritize resolving user problems over transactional speed. Always clarify intent and missing details before calling actions. Behavioral policy: (1) acknowledge pain points briefly and empathetically, (2) gather only required details, (3) offer clear options, (4) execute the correct action, (5) confirm outcome and next step. For discovery: always ask city + cuisine first, show options with rating/price/address, and suggest the best booking option. For modification: verify diner identity (first name, last name, phone, optional email), list reservations, then ask exactly what to change. For cancellation: collect reason, place Pending Cancellation, ask for final confirmation, then complete cancellation. For unresolved issues or repeated failures, escalate by creating a Case. Before ending any conversation, log interaction details with close_interaction.</description>
+            <developerName>instruction0_179Qy000002i7Co</developerName>
+            <language>en_US</language>
+            <masterLabel>instruction0_179Qy000002i7Co</masterLabel>
+            <sortOrder>1</sortOrder>
+        </genAiPluginInstructions>
+        <language>en_US</language>
+        <localActionLinks>
+            <functionName>get_restaurant_info_179Qy000002i7Co</functionName>
+        </localActionLinks>
+        <localActions>
+            <fullName>get_restaurant_info_179Qy000002i7Co</fullName>
+            <description>Searches restaurants by cuisine and city, with city fallback options for upsell.</description>
+            <developerName>get_restaurant_info_179Qy000002i7Co</developerName>
+            <invocationTarget>AgentAction_GetRestaurantInfo</invocationTarget>
+            <invocationTargetType>apex</invocationTargetType>
+            <isConfirmationRequired>false</isConfirmationRequired>
+            <isIncludeInProgressIndicator>false</isIncludeInProgressIndicator>
+            <localDeveloperName>get_restaurant_info</localDeveloperName>
+            <masterLabel>Get Restaurant Info</masterLabel>
+        </localActions>
+        <localDeveloperName>restaurant_inquiry</localDeveloperName>
+        <masterLabel>Restaurant Inquiry</masterLabel>
+        <pluginType>Topic</pluginType>
+    </localTopics>
+    <localTopics>
+        <fullName>conversation_closure_16jQy000001lxIb</fullName>
+        <canEscalate>false</canEscalate>
+        <description>Close and log conversation details</description>
+        <developerName>conversation_closure_16jQy000001lxIb</developerName>
+        <genAiPluginInstructions>
+            <description>You are the Intelligent Diner Support Agent focused on diner issue resolution and service recovery. Prioritize resolving user problems over transactional speed. Always clarify intent and missing details before calling actions. Behavioral policy: (1) acknowledge pain points briefly and empathetically, (2) gather only required details, (3) offer clear options, (4) execute the correct action, (5) confirm outcome and next step. For discovery: always ask city + cuisine first, show options with rating/price/address, and suggest the best booking option. For modification: verify diner identity (first name, last name, phone, optional email), list reservations, then ask exactly what to change. For cancellation: collect reason, place Pending Cancellation, ask for final confirmation, then complete cancellation. For unresolved issues or repeated failures, escalate by creating a Case. Before ending any conversation, log interaction details with close_interaction.</description>
+            <developerName>instruction0_179Qy000002i7Cn</developerName>
+            <language>en_US</language>
+            <masterLabel>instruction0_179Qy000002i7Cn</masterLabel>
+            <sortOrder>1</sortOrder>
+        </genAiPluginInstructions>
+        <language>en_US</language>
+        <localActionLinks>
+            <functionName>close_interaction_179Qy000002i7Cn</functionName>
+        </localActionLinks>
+        <localActions>
+            <fullName>close_interaction_179Qy000002i7Cn</fullName>
+            <description>Stores conversation closure details in Agent Interaction.</description>
+            <developerName>close_interaction_179Qy000002i7Cn</developerName>
+            <invocationTarget>AgentAction_CloseInteraction</invocationTarget>
+            <invocationTargetType>apex</invocationTargetType>
+            <isConfirmationRequired>false</isConfirmationRequired>
+            <isIncludeInProgressIndicator>false</isIncludeInProgressIndicator>
+            <localDeveloperName>close_interaction</localDeveloperName>
+            <masterLabel>Close Interaction</masterLabel>
+        </localActions>
+        <localDeveloperName>conversation_closure</localDeveloperName>
+        <masterLabel>Conversation Closure</masterLabel>
+        <pluginType>Topic</pluginType>
+    </localTopics>
+    <localTopics>
+        <fullName>knowledge_retrieval_16jQy000001lxIb</fullName>
+        <canEscalate>false</canEscalate>
+        <description>Search the knowledge base for policies and info</description>
+        <developerName>knowledge_retrieval_16jQy000001lxIb</developerName>
+        <genAiPluginInstructions>
+            <description>You are the Intelligent Diner Support Agent focused on diner issue resolution and service recovery. Prioritize resolving user problems over transactional speed. Always clarify intent and missing details before calling actions. Behavioral policy: (1) acknowledge pain points briefly and empathetically, (2) gather only required details, (3) offer clear options, (4) execute the correct action, (5) confirm outcome and next step. For discovery: always ask city + cuisine first, show options with rating/price/address, and suggest the best booking option. For modification: verify diner identity (first name, last name, phone, optional email), list reservations, then ask exactly what to change. For cancellation: collect reason, place Pending Cancellation, ask for final confirmation, then complete cancellation. For unresolved issues or repeated failures, escalate by creating a Case. Before ending any conversation, log interaction details with close_interaction.</description>
+            <developerName>instruction0_179Qy000002i7Cm</developerName>
+            <language>en_US</language>
+            <masterLabel>instruction0_179Qy000002i7Cm</masterLabel>
+            <sortOrder>1</sortOrder>
+        </genAiPluginInstructions>
+        <language>en_US</language>
+        <localActionLinks>
+            <functionName>search_knowledge_179Qy000002i7Cm</functionName>
+        </localActionLinks>
+        <localActions>
+            <fullName>search_knowledge_179Qy000002i7Cm</fullName>
+            <description>Searches the knowledge base for policies, procedures, and restaurant information.</description>
+            <developerName>search_knowledge_179Qy000002i7Cm</developerName>
+            <invocationTarget>AgentAction_SearchKnowledge</invocationTarget>
+            <invocationTargetType>apex</invocationTargetType>
+            <isConfirmationRequired>false</isConfirmationRequired>
+            <isIncludeInProgressIndicator>false</isIncludeInProgressIndicator>
+            <localDeveloperName>search_knowledge</localDeveloperName>
+            <masterLabel>Search Knowledge</masterLabel>
+        </localActions>
+        <localDeveloperName>knowledge_retrieval</localDeveloperName>
+        <masterLabel>Knowledge Retrieval</masterLabel>
+        <pluginType>Topic</pluginType>
+    </localTopics>
+    <localTopics>
+        <fullName>service_recovery_16jQy000001lxIb</fullName>
+        <canEscalate>false</canEscalate>
+        <description>Resolve diner complaints and service failures</description>
+        <developerName>service_recovery_16jQy000001lxIb</developerName>
+        <genAiPluginInstructions>
+            <description>You are the Intelligent Diner Support Agent focused on diner issue resolution and service recovery. Prioritize resolving user problems over transactional speed. Always clarify intent and missing details before calling actions. Behavioral policy: (1) acknowledge pain points briefly and empathetically, (2) gather only required details, (3) offer clear options, (4) execute the correct action, (5) confirm outcome and next step. For discovery: always ask city + cuisine first, show options with rating/price/address, and suggest the best booking option. For modification: verify diner identity (first name, last name, phone, optional email), list reservations, then ask exactly what to change. For cancellation: collect reason, place Pending Cancellation, ask for final confirmation, then complete cancellation. For unresolved issues or repeated failures, escalate by creating a Case. Before ending any conversation, log interaction details with close_interaction.</description>
+            <developerName>instruction0_179Qy000002i7Cl</developerName>
+            <language>en_US</language>
+            <masterLabel>instruction0_179Qy000002i7Cl</masterLabel>
+            <sortOrder>1</sortOrder>
+        </genAiPluginInstructions>
+        <language>en_US</language>
+        <localActionLinks>
+            <functionName>get_reservations_179Qy000002i7Cl</functionName>
+        </localActionLinks>
+        <localActionLinks>
+            <functionName>escalate_to_human_179Qy000002i7Cl</functionName>
+        </localActionLinks>
+        <localActionLinks>
+            <functionName>get_restaurant_info_179Qy000002i7Cl</functionName>
+        </localActionLinks>
+        <localActions>
+            <fullName>get_restaurant_info_179Qy000002i7Cl</fullName>
+            <description>Find alternatives to recover diner experience.</description>
+            <developerName>get_restaurant_info_179Qy000002i7Cl</developerName>
+            <invocationTarget>AgentAction_GetRestaurantInfo</invocationTarget>
+            <invocationTargetType>apex</invocationTargetType>
+            <isConfirmationRequired>false</isConfirmationRequired>
+            <isIncludeInProgressIndicator>false</isIncludeInProgressIndicator>
+            <localDeveloperName>get_restaurant_info</localDeveloperName>
+            <masterLabel>Get Restaurant Alternatives</masterLabel>
+        </localActions>
+        <localActions>
+            <fullName>get_reservations_179Qy000002i7Cl</fullName>
+            <description>Fetch reservations to support complaint handling.</description>
+            <developerName>get_reservations_179Qy000002i7Cl</developerName>
+            <invocationTarget>AgentAction_GetReservations</invocationTarget>
+            <invocationTargetType>apex</invocationTargetType>
+            <isConfirmationRequired>false</isConfirmationRequired>
+            <isIncludeInProgressIndicator>false</isIncludeInProgressIndicator>
+            <localDeveloperName>get_reservations</localDeveloperName>
+            <masterLabel>Get Reservations (Recovery)</masterLabel>
+        </localActions>
+        <localActions>
+            <fullName>escalate_to_human_179Qy000002i7Cl</fullName>
+            <description>Escalate unresolved complaint with full context.</description>
+            <developerName>escalate_to_human_179Qy000002i7Cl</developerName>
+            <invocationTarget>AgentAction_EscalateToHuman</invocationTarget>
+            <invocationTargetType>apex</invocationTargetType>
+            <isConfirmationRequired>false</isConfirmationRequired>
+            <isIncludeInProgressIndicator>false</isIncludeInProgressIndicator>
+            <localDeveloperName>escalate_to_human</localDeveloperName>
+            <masterLabel>Escalate Recovery Case</masterLabel>
+        </localActions>
+        <localDeveloperName>service_recovery</localDeveloperName>
+        <masterLabel>Service Recovery</masterLabel>
+        <pluginType>Topic</pluginType>
+    </localTopics>
+    <localTopics>
+        <fullName>agent_router_16jQy000001lxIb</fullName>
+        <canEscalate>false</canEscalate>
+        <description>Welcome the user and route to inquiry, booking, or knowledge retrieval based on user intent</description>
+        <developerName>agent_router_16jQy000001lxIb</developerName>
+        <genAiPluginInstructions>
+            <description>You are the Intelligent Diner Support Agent focused on diner issue resolution and service recovery. Prioritize resolving user problems over transactional speed. Always clarify intent and missing details before calling actions. Behavioral policy: (1) acknowledge pain points briefly and empathetically, (2) gather only required details, (3) offer clear options, (4) execute the correct action, (5) confirm outcome and next step. For discovery: always ask city + cuisine first, show options with rating/price/address, and suggest the best booking option. For modification: verify diner identity (first name, last name, phone, optional email), list reservations, then ask exactly what to change. For cancellation: collect reason, place Pending Cancellation, ask for final confirmation, then complete cancellation. For unresolved issues or repeated failures, escalate by creating a Case. Before ending any conversation, log interaction details with close_interaction.</description>
+            <developerName>instruction0_179Qy000002i7Ck</developerName>
+            <language>en_US</language>
+            <masterLabel>instruction0_179Qy000002i7Ck</masterLabel>
+            <sortOrder>1</sortOrder>
+        </genAiPluginInstructions>
+        <language>en_US</language>
+        <localDeveloperName>agent_router</localDeveloperName>
+        <masterLabel>Agent Router</masterLabel>
+        <pluginType>Topic</pluginType>
+    </localTopics>
+    <localTopics>
+        <fullName>escalation_16jQy000001lxIb</fullName>
+        <canEscalate>false</canEscalate>
+        <description>Escalate to a human agent</description>
+        <developerName>escalation_16jQy000001lxIb</developerName>
+        <genAiPluginInstructions>
+            <description>You are the Intelligent Diner Support Agent focused on diner issue resolution and service recovery. Prioritize resolving user problems over transactional speed. Always clarify intent and missing details before calling actions. Behavioral policy: (1) acknowledge pain points briefly and empathetically, (2) gather only required details, (3) offer clear options, (4) execute the correct action, (5) confirm outcome and next step. For discovery: always ask city + cuisine first, show options with rating/price/address, and suggest the best booking option. For modification: verify diner identity (first name, last name, phone, optional email), list reservations, then ask exactly what to change. For cancellation: collect reason, place Pending Cancellation, ask for final confirmation, then complete cancellation. For unresolved issues or repeated failures, escalate by creating a Case. Before ending any conversation, log interaction details with close_interaction.</description>
+            <developerName>instruction0_179Qy000002i7Cj</developerName>
+            <language>en_US</language>
+            <masterLabel>instruction0_179Qy000002i7Cj</masterLabel>
+            <sortOrder>1</sortOrder>
+        </genAiPluginInstructions>
+        <language>en_US</language>
+        <localActionLinks>
+            <functionName>escalate_to_human_179Qy000002i7Cj</functionName>
+        </localActionLinks>
+        <localActions>
+            <fullName>escalate_to_human_179Qy000002i7Cj</fullName>
+            <description>Creates a support case before transferring the diner to a human agent.</description>
+            <developerName>escalate_to_human_179Qy000002i7Cj</developerName>
+            <invocationTarget>AgentAction_EscalateToHuman</invocationTarget>
+            <invocationTargetType>apex</invocationTargetType>
+            <isConfirmationRequired>false</isConfirmationRequired>
+            <isIncludeInProgressIndicator>false</isIncludeInProgressIndicator>
+            <localDeveloperName>escalate_to_human</localDeveloperName>
+            <masterLabel>Escalate To Human</masterLabel>
+        </localActions>
+        <localDeveloperName>escalation</localDeveloperName>
+        <masterLabel>Escalation</masterLabel>
+        <pluginType>Topic</pluginType>
+    </localTopics>
+    <localTopics>
+        <fullName>booking_management_16jQy000001lxIb</fullName>
+        <canEscalate>false</canEscalate>
+        <description>Manage reservations (create, update, cancel, view)</description>
+        <developerName>booking_management_16jQy000001lxIb</developerName>
+        <genAiPluginInstructions>
+            <description>You are the Intelligent Diner Support Agent focused on diner issue resolution and service recovery. Prioritize resolving user problems over transactional speed. Always clarify intent and missing details before calling actions. Behavioral policy: (1) acknowledge pain points briefly and empathetically, (2) gather only required details, (3) offer clear options, (4) execute the correct action, (5) confirm outcome and next step. For discovery: always ask city + cuisine first, show options with rating/price/address, and suggest the best booking option. For modification: verify diner identity (first name, last name, phone, optional email), list reservations, then ask exactly what to change. For cancellation: collect reason, place Pending Cancellation, ask for final confirmation, then complete cancellation. For unresolved issues or repeated failures, escalate by creating a Case. Before ending any conversation, log interaction details with close_interaction.</description>
+            <developerName>instruction0_179Qy000002i7Cp</developerName>
+            <language>en_US</language>
+            <masterLabel>instruction0_179Qy000002i7Cp</masterLabel>
+            <sortOrder>1</sortOrder>
+        </genAiPluginInstructions>
+        <language>en_US</language>
+        <localActionLinks>
+            <functionName>get_reservations_179Qy000002i7Cp</functionName>
+        </localActionLinks>
+        <localActionLinks>
+            <functionName>cancel_reservation_179Qy000002i7Cp</functionName>
+        </localActionLinks>
+        <localActionLinks>
+            <functionName>update_reservation_179Qy000002i7Cp</functionName>
+        </localActionLinks>
+        <localActionLinks>
+            <functionName>create_reservation_179Qy000002i7Cp</functionName>
+        </localActionLinks>
+        <localActions>
+            <fullName>create_reservation_179Qy000002i7Cp</fullName>
+            <description>Creates a new restaurant reservation for a diner.</description>
+            <developerName>create_reservation_179Qy000002i7Cp</developerName>
+            <invocationTarget>AgentAction_CreateReservation</invocationTarget>
+            <invocationTargetType>apex</invocationTargetType>
+            <isConfirmationRequired>false</isConfirmationRequired>
+            <isIncludeInProgressIndicator>false</isIncludeInProgressIndicator>
+            <localDeveloperName>create_reservation</localDeveloperName>
+            <masterLabel>Create Reservation</masterLabel>
+        </localActions>
+        <localActions>
+            <fullName>get_reservations_179Qy000002i7Cp</fullName>
+            <description>Retrieves upcoming reservations for a specific diner.</description>
+            <developerName>get_reservations_179Qy000002i7Cp</developerName>
+            <invocationTarget>AgentAction_GetReservations</invocationTarget>
+            <invocationTargetType>apex</invocationTargetType>
+            <isConfirmationRequired>false</isConfirmationRequired>
+            <isIncludeInProgressIndicator>false</isIncludeInProgressIndicator>
+            <localDeveloperName>get_reservations</localDeveloperName>
+            <masterLabel>Get Reservations</masterLabel>
+        </localActions>
+        <localActions>
+            <fullName>cancel_reservation_179Qy000002i7Cp</fullName>
+            <description>Creates pending cancellation and finalizes only after confirmation.</description>
+            <developerName>cancel_reservation_179Qy000002i7Cp</developerName>
+            <invocationTarget>AgentAction_CancelReservation</invocationTarget>
+            <invocationTargetType>apex</invocationTargetType>
+            <isConfirmationRequired>false</isConfirmationRequired>
+            <isIncludeInProgressIndicator>false</isIncludeInProgressIndicator>
+            <localDeveloperName>cancel_reservation</localDeveloperName>
+            <masterLabel>Cancel Reservation</masterLabel>
+        </localActions>
+        <localActions>
+            <fullName>update_reservation_179Qy000002i7Cp</fullName>
+            <description>Modifies an existing reservation&apos;s date/time or party size.</description>
+            <developerName>update_reservation_179Qy000002i7Cp</developerName>
+            <invocationTarget>AgentAction_UpdateReservation</invocationTarget>
+            <invocationTargetType>apex</invocationTargetType>
+            <isConfirmationRequired>false</isConfirmationRequired>
+            <isIncludeInProgressIndicator>false</isIncludeInProgressIndicator>
+            <localDeveloperName>update_reservation</localDeveloperName>
+            <masterLabel>Update Reservation</masterLabel>
+        </localActions>
+        <localDeveloperName>booking_management</localDeveloperName>
+        <masterLabel>Booking Management</masterLabel>
+        <pluginType>Topic</pluginType>
+    </localTopics>
+    <masterLabel>Intelligent Diner Support Agent</masterLabel>
+    <plannerType>Atlas__ConcurrentMultiAgentOrchestration</plannerType>
+</GenAiPlannerBundle>
