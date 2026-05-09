@@ -1,12 +1,12 @@
 system:
-    instructions: "You are the Intelligent Diner Support Agent focused on diner issue resolution and service recovery. Prioritize resolving user problems over transactional speed. Always clarify intent and missing details before calling actions. Behavioral policy: (1) acknowledge pain points briefly and empathetically, (2) gather only required details, (3) offer clear options, (4) execute the correct action, (5) confirm outcome and next step. For discovery: always ask city + cuisine first, show options with rating/price/address, and suggest the best booking option. For modification: verify diner identity (first name, last name, phone, optional email), list reservations, then ask exactly what to change. For cancellation: collect reason, place Pending Cancellation, ask for final confirmation, then complete cancellation. For unresolved issues or repeated failures, escalate by creating a Case. Before ending any conversation, log interaction details with close_interaction."
+    instructions: "You are the Restro Manager AI focused on diner issue resolution and service recovery. Prioritize resolving user problems over transactional speed. Always clarify intent and missing details before calling actions. Behavioral policy: (1) acknowledge pain points briefly and empathetically, (2) gather only required details, (3) offer clear options, (4) execute the correct action, (5) confirm outcome and next step. For discovery: always ask city + cuisine first, show options with rating/price/address, and suggest the best booking option. For modification: verify diner identity (first name, last name, phone, optional email), list reservations, then ask exactly what to change. For cancellation: collect reason, place Pending Cancellation, ask for final confirmation, then complete cancellation. For unresolved issues or repeated failures, escalate by creating a Case. Before ending any conversation, log interaction details with close_interaction."
     messages:
-        welcome: "Hello! I'm the Intelligent Diner Support Agent. I can help you find a great place to eat or manage your bookings. How can I help you today?"
+        welcome: "Hello! I'm the Restro Manager AI. I can help you find a great place to eat or manage your bookings. How can I help you today?"
         error: "I'm sorry, I encountered an issue. Please try again or ask for a human agent."
 
 config:
-    developer_name: "Diner_Support_V2"
-    agent_label: "Intelligent Diner Support Agent"
+    developer_name: "Restro_Manager_AI_Bundle"
+    agent_label: "Restro Manager AI"
     description: "Intelligent AI agent for restaurant discovery, reservation management, and diner service recovery."
     agent_type: "AgentforceServiceAgent"
     default_agent_user: "intelligent_diner_support_agent@00dqy00000p20sz87585760.ext"
@@ -20,7 +20,7 @@ variables:
         description: "User preferred city for restaurant discovery"
     preferredCuisine: mutable string = ""
         description: "User preferred cuisine for restaurant discovery"
-    lastRestaurantList: mutable list[string] = []
+    lastRestaurantList: mutable list[object] = []
     lastReservationList: mutable list[object] = []
     lastKnowledgeArticles: mutable list[string] = []
     lastActionMessage: mutable string = ""
@@ -62,37 +62,25 @@ subagent restaurant_inquiry:
             confirm_preferences: @utils.setVariables
                 with cityCuisineConfirmed=...
             search_restaurants: @actions.get_restaurant_info
-                with cuisine=@variables.preferredCuisine
                 with city=@variables.preferredCity
-                with priceRange=...
                 set @variables.lastRestaurantList = @outputs.restaurants
                 available when @variables.cityCuisineConfirmed == true
 
     actions:
         get_restaurant_info:
-            description: "Searches restaurants by cuisine and city, with city fallback options for upsell."
+            description: "Searches restaurants by city."
             label: "Get Restaurant Info"
             target: "apex://AgentAction_GetRestaurantInfo"
             inputs:
-                cuisine: string
-                    description: "Type of cuisine (e.g. Italian, Mexican)"
-                    label: "Cuisine"
-                    is_required: False
                 city: string
                     description: "City location"
                     label: "City"
                     is_required: False
-                priceRange: string
-                    description: "Price range ($, $$, $$$, $$$$)"
-                    label: "Price Range"
-                    is_required: False
             outputs:
-                restaurants: list[string]
+                restaurants: list[object]
                     label: "Restaurant Summaries"
                     is_displayable: True
-                message: string
-                    label: "Status Message"
-                    is_displayable: True
+                    complex_data_type_name: "lightning__recordInfoType"
 
 subagent booking_management:
     label: "Booking Management"
@@ -329,8 +317,6 @@ subagent service_recovery:
                 set @variables.lastReservationList = @outputs.reservations
             suggest_alternatives: @actions.get_restaurant_info
                 with city=@variables.preferredCity
-                with cuisine=@variables.preferredCuisine
-                with priceRange=...
                 set @variables.lastRestaurantList = @outputs.restaurants
             escalate_recovery_case: @actions.escalate_to_human
                 with userEmail=@variables.userEmail
@@ -370,22 +356,15 @@ subagent service_recovery:
             label: "Get Restaurant Alternatives"
             target: "apex://AgentAction_GetRestaurantInfo"
             inputs:
-                cuisine: string
-                    description: "Preferred cuisine"
-                    label: "Cuisine"
-                    is_required: False
                 city: string
                     description: "Preferred city"
                     label: "City"
                     is_required: False
-                priceRange: string
-                    description: "Preferred price range"
-                    label: "Price Range"
-                    is_required: False
             outputs:
-                restaurants: list[string]
+                restaurants: list[object]
                     label: "Restaurant Summaries"
                     is_displayable: True
+                    complex_data_type_name: "lightning__recordInfoType"
         escalate_to_human:
             description: "Escalate unresolved complaint with full context."
             label: "Escalate Recovery Case"
@@ -477,4 +456,3 @@ subagent conversation_closure:
                     label: "Success"
                 message: string
                     label: "Status Message"
-

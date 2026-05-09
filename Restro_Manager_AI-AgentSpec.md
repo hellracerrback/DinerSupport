@@ -1,8 +1,8 @@
-# Agent Spec: Diner_Support_V2
+# Agent Spec: Restro_Manager_AI
 
 ## Purpose & Scope
 
-The Intelligent Diner Support Agent helps diners find restaurants, manage reservations (create, update, cancel), and get information about restaurant policies and procedures. It operates in the restaurant and hospitality domain.
+The Restro Manager AI helps diners find restaurants, manage reservations (create, update, cancel), and get information about restaurant policies and procedures. It operates in the restaurant and hospitality domain.
 
 ## Behavioral Intent
 
@@ -88,7 +88,7 @@ It now includes a `service_recovery` subagent to handle complaints and failed jo
 
 ## Agent Configuration
 
-- **developer_name:** `Diner_Support_V2`
-- **agent_label:** `Intelligent Diner Support Agent`
+- **developer_name:** `Restro_Manager_AI`
+- **agent_label:** `Restro Manager AI`
 - **agent_type:** `AgentforceServiceAgent`
 - **default_agent_user:** `epic.16fa1777910097525@orgfarm.salesforce.com`

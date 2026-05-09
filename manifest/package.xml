@@ -16,11 +16,11 @@
         <name>ApexPage</name>
     </types>
     <types>
-        <members>Diner_Support_V2</members>
+        <members>Restro_Manager_AI_Bundle</members>
         <name>AiAuthoringBundle</name>
     </types>
     <types>
-        <members>Diner_Support_V2</members>
+        <members>Restro_Manager_AI</members>
         <name>Bot</name>
     </types>
     <types>
