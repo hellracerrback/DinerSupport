@@ -1,460 +1,662 @@
 system:
-    instructions: "You are the Restro Manager AI focused on diner issue resolution and service recovery. Prioritize resolving user problems over transactional speed. Always clarify intent and missing details before calling actions. Behavioral policy: (1) acknowledge pain points briefly and empathetically, (2) gather only required details, (3) offer clear options, (4) execute the correct action, (5) confirm outcome and next step. For discovery: always ask city + cuisine first, show options with rating/price/address, and suggest the best booking option. For modification: verify diner identity (first name, last name, phone, optional email), list reservations, then ask exactly what to change. For cancellation: collect reason, place Pending Cancellation, ask for final confirmation, then complete cancellation. For unresolved issues or repeated failures, escalate by creating a Case. Before ending any conversation, log interaction details with close_interaction."
+    instructions: "You are Restro Manager AI, a warm and precise restaurant reservation assistant. Always greet the user warmly before handling their request. Do not invoke an action just to greet. Follow the reservation flow exactly: ask whether the user has an existing reservation or wants to make a new one, collect email before any lookup or write, query reservations by email, then route to the correct flow. Never mark a flow complete until an Agent Interaction record has been logged. Restaurant is read-only on existing reservations."
     messages:
-        welcome: "Hello! I'm the Restro Manager AI. I can help you find a great place to eat or manage your bookings. How can I help you today?"
+        welcome: "Hello! I'm Restro Manager AI. I can help with reservations, restaurant questions, or a dining issue. How can I help today?"
         error: "I'm sorry, I encountered an issue. Please try again or ask for a human agent."
 
 config:
     developer_name: "Restro_Manager_AI_Bundle"
     agent_label: "Restro Manager AI"
-    description: "Intelligent AI agent for restaurant discovery, reservation management, and diner service recovery."
+    description: "Restaurant reservation assistant for new bookings, existing reservation management, FAQs, and complaint escalation."
     agent_type: "AgentforceServiceAgent"
     default_agent_user: "intelligent_diner_support_agent@00dqy00000p20sz87585760.ext"
 
 variables:
     userEmail: mutable string = ""
-        description: "The email address of the current user"
-    lastConfirmationCode: mutable string = ""
-        description: "The confirmation code of the most recently created or updated reservation"
+        description: "The user's email address. Required before any Salesforce lookup or write."
+    reservationPath: mutable string = ""
+        description: "Normalize the user's route to exactly existing or new. Treat new reservation, new one, make a booking, book a table, show restaurants, restaurants in a city, restaurant options, and typo variants like ne w as new."
+    existingReservationIntent: mutable string = ""
+        description: "Existing reservation intent: cancel, modify, question, or complaint."
     preferredCity: mutable string = ""
-        description: "User preferred city for restaurant discovery"
+        description: "City to use for new reservation restaurant search."
     preferredCuisine: mutable string = ""
-        description: "User preferred cuisine for restaurant discovery"
+        description: "Optional cuisine preference after city restaurant options are shown."
+    lastConfirmationCode: mutable string = ""
+        description: "Confirmation code for the selected or newly created reservation."
     lastRestaurantList: mutable list[object] = []
+    restaurantsShown: mutable boolean = False
+        description: "True after city-based restaurant search has returned and options have been shown to the user."
     lastReservationList: mutable list[object] = []
+    lastReservationCount: mutable string = ""
     lastKnowledgeArticles: mutable list[string] = []
     lastActionMessage: mutable string = ""
-    cityCuisineConfirmed: mutable boolean = false
-        description: "True if the user has confirmed their city and cuisine preferences"
+    lastCaseNumber: mutable string = ""
+    interactionLogged: mutable boolean = False
 
 language:
     default_locale: "en_US"
 
 start_agent agent_router:
-    description: "Welcome the user and route to inquiry, booking, or knowledge retrieval based on user intent"
-    reasoning:
-        actions:
-            go_to_inquiry: @utils.transition to @subagent.restaurant_inquiry
-            go_to_booking: @utils.transition to @subagent.booking_management
-            go_to_knowledge: @utils.transition to @subagent.knowledge_retrieval
-            go_to_service_recovery: @utils.transition to @subagent.service_recovery
-            go_to_escalation: @utils.transition to @subagent.escalation
-            go_to_closure: @utils.transition to @subagent.conversation_closure
+    description: "Greet, collect existing/new reservation path and email, query reservations by email, then route."
+    before_reasoning:
+        if @variables.userEmail != "" and @variables.reservationPath == "new":
+            transition to @subagent.new_reservation
+        if @variables.userEmail != "" and @variables.reservationPath == "existing":
+            transition to @subagent.existing_reservation_intake
 
-subagent restaurant_inquiry:
-    label: "Restaurant Inquiry"
-    description: "Search and provide info about restaurants"
     reasoning:
         instructions: ->
-            | Follow this sequence exactly:
-            | (1) If preferredCity or preferredCuisine are missing, ask for them.
-            | (2) When provided, use set_city or set_cuisine to persist them.
-            | (3) Once both are set, ask: "Confirm: City = [City], Cuisine = [Cuisine]?"
-            | (4) If user affirms, call confirm_preferences with value = true.
-            | (5) Only then will search_restaurants be available. Invoke it.
-            | (6) Present the retrieved restaurant list with: name, city, cuisine, price, rating, and one upsell suggestion.
-            | (7) If none found, show fallback options in the same city.
-        actions:
-            set_city: @utils.setVariables
-                with preferredCity=...
-            set_cuisine: @utils.setVariables
-                with preferredCuisine=...
-            confirm_preferences: @utils.setVariables
-                with cityCuisineConfirmed=...
-            search_restaurants: @actions.get_restaurant_info
-                with city=@variables.preferredCity
-                set @variables.lastRestaurantList = @outputs.restaurants
-                available when @variables.cityCuisineConfirmed == true
+            if @variables.userEmail != "" and @variables.reservationPath != "" and @variables.lastReservationCount == "":
+                run @actions.get_reservations
+                    with userEmail = @variables.userEmail
+                    with dinerId = ...
+                    with firstName = ...
+                    with lastName = ...
+                    with phone = ...
+                    set @variables.lastReservationList = @outputs.reservations
+                    set @variables.lastReservationCount = @outputs.count
+                    set @variables.lastActionMessage = @outputs.message
 
-    actions:
-        get_restaurant_info:
-            description: "Searches restaurants by city."
-            label: "Get Restaurant Info"
-            target: "apex://AgentAction_GetRestaurantInfo"
-            inputs:
-                city: string
-                    description: "City location"
-                    label: "City"
-                    is_required: False
-            outputs:
-                restaurants: list[object]
-                    label: "Restaurant Summaries"
-                    is_displayable: True
-                    complex_data_type_name: "lightning__recordInfoType"
-
-subagent booking_management:
-    label: "Booking Management"
-    description: "Manage reservations (create, update, cancel, view)"
-    reasoning:
-        instructions: ->
-            | Help users manage their reservations while minimizing friction.
-            | For creating a reservation, ensure you have restaurant name, requested date/time, party size, and user email.
-            | For updating reservations, first collect diner first name, last name, and phone, then fetch reservations and ask what to update.
-            | For cancellation, ask cancellation reason and explicit confirmation before finalizing.
-            | If user asks for alternatives because a request fails, route to restaurant inquiry and suggest nearby options.
+            | Greet the user warmly for any incoming query. No action is needed for the greeting itself.
+            | Ask exactly: "Do you have an existing reservation, or would you like to make a new one?"
+            | Collect the user's email address before proceeding either way.
+            | If the user asks to show restaurants, list restaurants, see options, book a table, make a reservation, or mentions restaurants in a city, treat the path as new even if they do not say the exact word "new".
+            | Normalize reservationPath to exactly "existing" or exactly "new"; do not store phrases like "new one".
+            | Once you have both the path and email, call query_reservations_by_email to determine whether reservation records exist for that email.
+            | After the lookup returns, write the reservation count and message directly in your text response. Do NOT use the show_command tool. Always compose your response as direct text.
+            | If the user chose an existing reservation, route to existing reservation intake after the lookup.
+            | If the user chose a new reservation, route to new reservation after the lookup. Do not ask for date, time, party size, cuisine, or restaurant preference from the router.
         actions:
-            list_reservations: @actions.get_reservations
-                with userEmail=@variables.userEmail
-                with firstName=...
-                with lastName=...
-                with phone=...
+            collect_path_and_email: @utils.setVariables
+                description: "Collect whether the user has an existing reservation or wants a new one, plus their email address."
+                with reservationPath = ...
+                with userEmail = ...
+            start_new_reservation: @utils.transition to @subagent.new_reservation
+                description: "Use when the user wants a new reservation, says new one, asks to book a table, asks to show restaurants, asks to show options, or asks for restaurants in a city."
+            start_existing_reservation: @utils.transition to @subagent.existing_reservation_intake
+                description: "Use when the user has an existing reservation and needs help with it."
+            query_reservations_by_email: @actions.get_reservations
+                description: "Query reservations by email after the user provides email."
+                with userEmail = @variables.userEmail
+                with dinerId = ...
+                with firstName = ...
+                with lastName = ...
+                with phone = ...
                 set @variables.lastReservationList = @outputs.reservations
-            create_booking: @actions.create_reservation
-                with restaurantName=...
-                with requestedDateTime=...
-                with partySize=...
-                with userEmail=@variables.userEmail
-                set @variables.lastConfirmationCode = @outputs.confirmationCode
+                set @variables.lastReservationCount = @outputs.count
                 set @variables.lastActionMessage = @outputs.message
-            modify_booking: @actions.update_reservation
-                with confirmationCode=...
-                with newDateTime=...
-                with newPartySize=...
-                set @variables.lastActionMessage = @outputs.message
-            remove_booking: @actions.cancel_reservation
-                with confirmationCode=...
-                with cancellationReason=...
-                with confirmCancellation=...
-                set @variables.lastActionMessage = @outputs.message
+                available when @variables.userEmail != "" and @variables.lastReservationCount == ""
+            go_existing: @utils.transition to @subagent.existing_reservation_intake
+                description: "Continue with existing reservation help."
+                available when @variables.userEmail != "" and @variables.reservationPath == "existing" and @variables.lastReservationCount != ""
+            go_new: @utils.transition to @subagent.new_reservation
+                description: "Continue with a new reservation."
+                available when @variables.userEmail != "" and @variables.reservationPath == "new" and @variables.lastReservationCount != ""
+
+    after_reasoning:
+        if @variables.userEmail != "" and @variables.reservationPath == "existing" and @variables.lastReservationCount != "":
+            transition to @subagent.existing_reservation_intake
+        if @variables.userEmail != "" and @variables.reservationPath == "new" and @variables.lastReservationCount != "":
+            transition to @subagent.new_reservation
 
     actions:
         get_reservations:
-            description: "Retrieves upcoming reservations for a specific diner."
+            description: "Retrieves upcoming reservations for a diner by email or fallback identity."
             label: "Get Reservations"
             target: "apex://AgentAction_GetReservations"
             inputs:
                 userEmail: string
                     description: "Diner email address"
-                    label: "User Email"
+                    is_required: False
+                dinerId: id
+                    description: "Diner record id"
                     is_required: False
                 firstName: string
                     description: "Diner first name"
-                    label: "First Name"
                     is_required: False
                 lastName: string
                     description: "Diner last name"
-                    label: "Last Name"
                     is_required: False
                 phone: string
                     description: "Diner phone number"
-                    label: "Phone"
                     is_required: False
             outputs:
                 reservations: list[object]
-                    label: "Reservations"
+                    description: "Matching reservation records"
                     is_displayable: True
                     complex_data_type_name: "lightning__recordInfoType"
-
-        create_reservation:
-            description: "Creates a new restaurant reservation for a diner."
-            label: "Create Reservation"
-            target: "apex://AgentAction_CreateReservation"
-            inputs:
-                restaurantName: string
-                    description: "Name of the restaurant"
-                    label: "Restaurant Name"
-                    is_required: True
-                requestedDateTime: object
-                    description: "Requested date and time of the reservation"
-                    label: "Requested Date Time"
-                    is_required: True
-                    complex_data_type_name: "lightning__textType"
-                partySize: object
-                    description: "Number of guests"
-                    label: "Party Size"
-                    is_required: True
-                    complex_data_type_name: "lightning__textType"
-                userEmail: string
-                    description: "Diner email address"
-                    label: "User Email"
-                    is_required: True
-            outputs:
-                confirmationCode: string
-                    label: "Confirmation Code"
+                count: string
+                    description: "Number of reservations found"
                     is_displayable: True
-                message: string
-                    label: "Status Message"
-                    is_displayable: True
-
-        update_reservation:
-            description: "Modifies an existing reservation's date/time or party size."
-            label: "Update Reservation"
-            target: "apex://AgentAction_UpdateReservation"
-            inputs:
-                confirmationCode: string
-                    description: "The confirmation code of the reservation"
-                    label: "Confirmation Code"
-                    is_required: True
-                newDateTime: object
-                    description: "New date and time"
-                    label: "New Date Time"
-                    is_required: False
-                    complex_data_type_name: "lightning__textType"
-                newPartySize: object
-                    description: "New number of guests"
-                    label: "New Party Size"
-                    is_required: False
-                    complex_data_type_name: "lightning__textType"
-            outputs:
                 success: boolean
-                    label: "Success"
+                    description: "Whether lookup succeeded"
                 message: string
-                    label: "Status Message"
+                    description: "Lookup status message"
                     is_displayable: True
 
+subagent existing_reservation_intake:
+    description: "Classify existing reservation intent after email lookup."
+    reasoning:
+        instructions: ->
+            | The user's email is {!@variables.userEmail}. Reservation lookup message: {!@variables.lastActionMessage}. Reservation count: {!@variables.lastReservationCount}.
+            | Ask what they need help with and offer only these choices: cancel a reservation, modify a reservation, ask a question, or raise a complaint.
+            | If reservation details are available in lastReservationList, display the confirmation code, restaurant, date/time, party size, and status before asking the intent.
+            | If no reservation is found but the user insists they have one, ask for another email or offer to make a new reservation.
+        actions:
+            set_existing_intent: @utils.setVariables
+                description: "Classify the user's existing reservation need."
+                with existingReservationIntent = ...
+            go_cancel: @utils.transition to @subagent.cancel_reservation_flow
+                description: "User wants to cancel a reservation."
+                available when @variables.existingReservationIntent == "cancel"
+            go_modify: @utils.transition to @subagent.modify_reservation_flow
+                description: "User wants to modify a reservation."
+                available when @variables.existingReservationIntent == "modify"
+            go_question: @utils.transition to @subagent.reservation_question_flow
+                description: "User has a question about a reservation."
+                available when @variables.existingReservationIntent == "question"
+            go_complaint: @utils.transition to @subagent.complaint_escalation_flow
+                description: "User wants to raise a complaint."
+                available when @variables.existingReservationIntent == "complaint"
+
+subagent cancel_reservation_flow:
+    description: "Fetch, display, confirm, and cancel an existing reservation."
+    reasoning:
+        instructions: ->
+            | Cancellation flow:
+            | First fetch reservation records for {!@variables.userEmail} using fetch_reservation_for_cancel.
+            | Display reservation details directly to the user, including confirmation code, restaurant, date/time, party size, and status. Do NOT use the show_command tool.
+            | Ask for the confirmation code if multiple reservations are returned or no confirmation code is known.
+            | Ask for explicit cancellation confirmation before finalizing.
+            | On confirmation, call cancel_booking with confirmCancellation = True. Use the exact cancellationFee, refundAmount, confirmationCode, and message values returned.
+            | After cancellation is completed or the user declines, route to conversation closure so the Agent Interaction record is logged.
+        actions:
+            fetch_reservation_for_cancel: @actions.get_reservations
+                description: "Fetch reservation details before cancellation."
+                with userEmail = @variables.userEmail
+                with dinerId = ...
+                with firstName = ...
+                with lastName = ...
+                with phone = ...
+                set @variables.lastReservationList = @outputs.reservations
+                set @variables.lastReservationCount = @outputs.count
+                set @variables.lastActionMessage = @outputs.message
+                available when @variables.userEmail != ""
+            set_confirmation_for_cancel: @utils.setVariables
+                description: "Store the reservation confirmation code selected by the user."
+                with lastConfirmationCode = ...
+            cancel_booking: @actions.cancel_reservation
+                description: "Cancel the selected reservation after explicit user confirmation."
+                with confirmationCode = @variables.lastConfirmationCode
+                with cancellationReason = ...
+                with confirmCancellation = ...
+                set @variables.lastActionMessage = @outputs.message
+                available when @variables.userEmail != "" and @variables.lastConfirmationCode != ""
+            go_to_closure: @utils.transition to @subagent.conversation_closure
+                description: "Log interaction after cancellation flow."
+
+    actions:
+        get_reservations:
+            description: "Retrieves upcoming reservations for a diner."
+            target: "apex://AgentAction_GetReservations"
+            inputs:
+                userEmail: string
+                    is_required: False
+                dinerId: id
+                    is_required: False
+                firstName: string
+                    is_required: False
+                lastName: string
+                    is_required: False
+                phone: string
+                    is_required: False
+            outputs:
+                reservations: list[object]
+                    is_displayable: True
+                    complex_data_type_name: "lightning__recordInfoType"
+                count: string
+                    is_displayable: True
+                success: boolean
+                message: string
+                    is_displayable: True
         cancel_reservation:
-            description: "Creates pending cancellation and finalizes only after confirmation."
-            label: "Cancel Reservation"
+            description: "Updates a reservation cancellation state and finalizes cancellation after confirmation."
             target: "apex://AgentAction_CancelReservation"
             inputs:
                 confirmationCode: string
-                    description: "The confirmation code of the reservation"
-                    label: "Confirmation Code"
                     is_required: True
                 cancellationReason: string
-                    description: "Reason for cancellation"
-                    label: "Cancellation Reason"
                     is_required: False
                 confirmCancellation: boolean
-                    description: "Set true to finalize cancellation"
-                    label: "Confirm Cancellation"
                     is_required: False
             outputs:
                 success: boolean
-                    label: "Success"
                 message: string
-                    label: "Status Message"
+                    is_displayable: True
+                confirmationCode: string
+                    is_displayable: True
+                cancellationFee: string
+                    is_displayable: True
+                refundAmount: string
                     is_displayable: True
 
-subagent knowledge_retrieval:
-    label: "Knowledge Retrieval"
-    description: "Search the knowledge base for policies and info"
+subagent modify_reservation_flow:
+    description: "Modify allowed fields on an existing reservation while blocking restaurant changes."
     reasoning:
         instructions: ->
-            | Use the search_knowledge tool to answer questions about restaurant policies, cancellation rules, or general information.
+            | Modification flow:
+            | Fetch reservation records for {!@variables.userEmail} using fetch_reservation_for_modify, then display confirmation code, restaurant, date/time, party size, special requests, and status.
+            | Ask which fields to update: number of guests, food preferences, date/time, or special requests.
+            | If the user asks to change the restaurant, say exactly: "The restaurant cannot be changed on an existing reservation. Would you like to cancel and make a new reservation instead?" Do not call update_booking for restaurant changes.
+            | Only call update_booking for date/time or party size changes. The current backing action cannot update restaurant.
+            | After update_booking succeeds, fetch the updated record again and display it for confirmation.
+            | Then route to conversation closure so the Agent Interaction record is logged.
+            | Do NOT use the show_command tool. Always compose your response as direct text.
         actions:
-            find_info: @actions.search_knowledge
-                with query=...
+            fetch_reservation_for_modify: @actions.get_reservations
+                description: "Fetch reservation details before modification."
+                with userEmail = @variables.userEmail
+                with dinerId = ...
+                with firstName = ...
+                with lastName = ...
+                with phone = ...
+                set @variables.lastReservationList = @outputs.reservations
+                set @variables.lastReservationCount = @outputs.count
+                set @variables.lastActionMessage = @outputs.message
+                available when @variables.userEmail != ""
+            set_confirmation_for_modify: @utils.setVariables
+                description: "Store selected confirmation code."
+                with lastConfirmationCode = ...
+            update_booking: @actions.update_reservation
+                description: "Update existing reservation date/time or party size only."
+                with confirmationCode = @variables.lastConfirmationCode
+                with newDateTime = ...
+                with newPartySize = ...
+                set @variables.lastActionMessage = @outputs.message
+                available when @variables.userEmail != "" and @variables.lastConfirmationCode != ""
+            fetch_updated_reservation: @actions.get_reservations
+                description: "Fetch the updated reservation after modification."
+                with userEmail = @variables.userEmail
+                with dinerId = ...
+                with firstName = ...
+                with lastName = ...
+                with phone = ...
+                set @variables.lastReservationList = @outputs.reservations
+                set @variables.lastActionMessage = @outputs.message
+                available when @variables.userEmail != "" and @variables.lastActionMessage != ""
+            go_to_closure: @utils.transition to @subagent.conversation_closure
+                description: "Log interaction after modification flow."
+
+    actions:
+        get_reservations:
+            description: "Retrieves upcoming reservations for a diner."
+            target: "apex://AgentAction_GetReservations"
+            inputs:
+                userEmail: string
+                    is_required: False
+                dinerId: id
+                    is_required: False
+                firstName: string
+                    is_required: False
+                lastName: string
+                    is_required: False
+                phone: string
+                    is_required: False
+            outputs:
+                reservations: list[object]
+                    is_displayable: True
+                    complex_data_type_name: "lightning__recordInfoType"
+                count: string
+                    is_displayable: True
+                success: boolean
+                message: string
+                    is_displayable: True
+        update_reservation:
+            description: "Modifies an existing reservation's date/time or party size."
+            target: "apex://AgentAction_UpdateReservation"
+            inputs:
+                confirmationCode: string
+                    is_required: True
+                newDateTime: datetime
+                    is_required: False
+                newPartySize: number
+                    is_required: False
+            outputs:
+                success: boolean
+                message: string
+                    is_displayable: True
+                confirmationCode: string
+                    is_displayable: True
+                oldDateTime: datetime
+                    is_displayable: True
+                newDateTime: datetime
+                    is_displayable: True
+                oldPartySize: number
+                    is_displayable: True
+
+subagent reservation_question_flow:
+    description: "Answer existing reservation questions using Knowledge first, then Salesforce record context."
+    reasoning:
+        instructions: ->
+            | Question flow:
+            | Search Knowledge first using search_faq.
+            | If useful articles are returned, answer from article values directly.
+            | If no useful match is returned, fetch reservation context using fetch_reservation_for_question and, if city context is needed, fetch restaurant context using fetch_restaurant_context.
+            | Include the exact article/message or record field values that support the answer. Do NOT use the show_command tool.
+            | Then route to conversation closure so the Agent Interaction record is logged.
+        actions:
+            search_faq: @actions.search_knowledge
+                description: "Search FAQ articles for the user's reservation question."
+                with query = ...
                 set @variables.lastKnowledgeArticles = @outputs.articles
                 set @variables.lastActionMessage = @outputs.message
+                available when @variables.userEmail != ""
+            fetch_reservation_for_question: @actions.get_reservations
+                description: "Fetch reservation context if Knowledge does not answer the question."
+                with userEmail = @variables.userEmail
+                with dinerId = ...
+                with firstName = ...
+                with lastName = ...
+                with phone = ...
+                set @variables.lastReservationList = @outputs.reservations
+                set @variables.lastActionMessage = @outputs.message
+                available when @variables.userEmail != ""
+            fetch_restaurant_context: @actions.get_restaurant_info
+                description: "Fetch restaurant fields by city as FAQ fallback context."
+                with city = ...
+                set @variables.lastRestaurantList = @outputs.restaurants
+                available when @variables.userEmail != ""
+            go_to_closure: @utils.transition to @subagent.conversation_closure
+                description: "Log interaction after question flow."
 
     actions:
         search_knowledge:
             description: "Searches the knowledge base for policies, procedures, and restaurant information."
-            label: "Search Knowledge"
             target: "apex://AgentAction_SearchKnowledge"
             inputs:
                 query: string
-                    description: "The keywords or question to search for"
-                    label: "Search Query"
                     is_required: True
             outputs:
                 articles: list[string]
-                    label: "Articles"
                     is_displayable: True
                 message: string
-                    label: "Message"
                     is_displayable: True
-
-subagent escalation:
-    label: "Escalation"
-    description: "Escalate to a human agent"
-    reasoning:
-        instructions: ->
-            | If the user asks for a human, has repeated service issues, or resolution is blocked, escalate the conversation.
-            | Include a concise subject and conversation summary to reduce handoff friction.
-        actions:
-            escalate: @actions.escalate_to_human
-                with userEmail=@variables.userEmail
-                with subject=...
-                with conversationSummary=...
-                with issueType=...
-
-    actions:
-        escalate_to_human:
-            description: "Creates a support case before transferring the diner to a human agent."
-            label: "Escalate To Human"
-            target: "apex://AgentAction_EscalateToHuman"
-            inputs:
-                userEmail: string
-                    description: "Diner email"
-                    label: "User Email"
-                    is_required: True
-                subject: string
-                    description: "Case subject"
-                    label: "Subject"
-                    is_required: False
-                conversationSummary: string
-                    description: "Conversation details to pass to the human agent"
-                    label: "Conversation Summary"
-                    is_required: False
-                issueType: string
-                    description: "Issue classification"
-                    label: "Issue Type"
-                    is_required: False
-            outputs:
-                caseNumber: string
-                    label: "Case Number"
-                    is_displayable: True
-                message: string
-                    label: "Status Message"
-                    is_displayable: True
-
-subagent service_recovery:
-    label: "Service Recovery"
-    description: "Resolve diner complaints and service failures"
-    reasoning:
-        instructions: ->
-            | Use this flow when diner reports bad experience, failed booking, wrong reservation, long wait, or repeated issues.
-            | First acknowledge the issue, then gather: diner identity, what went wrong, desired resolution.
-            | If reservation context exists, fetch reservation details first.
-            | Offer remedies: update reservation, cancellation assistance, alternative restaurant options, or immediate escalation.
-            | Escalate when the diner requests manager/human or issue remains unresolved.
-        actions:
-            fetch_reservation_context: @actions.get_reservations
-                with userEmail=@variables.userEmail
-                with firstName=...
-                with lastName=...
-                with phone=...
-                set @variables.lastReservationList = @outputs.reservations
-            suggest_alternatives: @actions.get_restaurant_info
-                with city=@variables.preferredCity
-                set @variables.lastRestaurantList = @outputs.restaurants
-            escalate_recovery_case: @actions.escalate_to_human
-                with userEmail=@variables.userEmail
-                with subject=...
-                with conversationSummary=...
-                with issueType=...
-
-    actions:
         get_reservations:
-            description: "Fetch reservations to support complaint handling."
-            label: "Get Reservations (Recovery)"
+            description: "Retrieves upcoming reservations for a diner."
             target: "apex://AgentAction_GetReservations"
             inputs:
                 userEmail: string
-                    description: "Diner email"
-                    label: "User Email"
+                    is_required: False
+                dinerId: id
                     is_required: False
                 firstName: string
-                    description: "Diner first name"
-                    label: "First Name"
                     is_required: False
                 lastName: string
-                    description: "Diner last name"
-                    label: "Last Name"
                     is_required: False
                 phone: string
-                    description: "Diner phone"
-                    label: "Phone"
                     is_required: False
             outputs:
                 reservations: list[object]
-                    label: "Reservations"
                     is_displayable: True
                     complex_data_type_name: "lightning__recordInfoType"
+                count: string
+                    is_displayable: True
+                success: boolean
+                message: string
+                    is_displayable: True
         get_restaurant_info:
-            description: "Find alternatives to recover diner experience."
-            label: "Get Restaurant Alternatives"
+            description: "Find restaurants by city."
             target: "apex://AgentAction_GetRestaurantInfo"
             inputs:
                 city: string
-                    description: "Preferred city"
-                    label: "City"
-                    is_required: False
+                    is_required: True
             outputs:
                 restaurants: list[object]
-                    label: "Restaurant Summaries"
                     is_displayable: True
                     complex_data_type_name: "lightning__recordInfoType"
+
+subagent complaint_escalation_flow:
+    description: "Collect complaint details, create a Case assigned to the escalation queue, and log the interaction."
+    reasoning:
+        instructions: ->
+            | Complaint flow:
+            | Acknowledge the complaint briefly and empathetically.
+            | Fetch reservation records for {!@variables.userEmail} and display them before collecting complaint details.
+            | Collect complaint description and nature of issue.
+            | Create a Case using create_escalation_case. The backing Apex assigns the Case to the escalation queue.
+            | Give the user the exact caseNumber and message returned.
+            | Then route to conversation closure so the Agent Interaction record is logged.
+            | Do NOT use the show_command tool. Always compose your response as direct text.
+        actions:
+            fetch_reservation_for_complaint: @actions.get_reservations
+                description: "Fetch reservation context for complaint handling."
+                with userEmail = @variables.userEmail
+                with dinerId = ...
+                with firstName = ...
+                with lastName = ...
+                with phone = ...
+                set @variables.lastReservationList = @outputs.reservations
+                set @variables.lastReservationCount = @outputs.count
+                set @variables.lastActionMessage = @outputs.message
+                available when @variables.userEmail != ""
+            create_escalation_case: @actions.escalate_to_human
+                description: "Create or update a complaint Case and assign it to the escalation queue."
+                with userEmail = @variables.userEmail
+                with subject = ...
+                with conversationSummary = ...
+                with issueType = ...
+                set @variables.lastCaseNumber = @outputs.caseNumber
+                set @variables.lastActionMessage = @outputs.message
+                available when @variables.userEmail != ""
+            go_to_closure: @utils.transition to @subagent.conversation_closure
+                description: "Log interaction after complaint flow."
+
+    actions:
+        get_reservations:
+            description: "Retrieves upcoming reservations for a diner."
+            target: "apex://AgentAction_GetReservations"
+            inputs:
+                userEmail: string
+                    is_required: False
+                dinerId: id
+                    is_required: False
+                firstName: string
+                    is_required: False
+                lastName: string
+                    is_required: False
+                phone: string
+                    is_required: False
+            outputs:
+                reservations: list[object]
+                    is_displayable: True
+                    complex_data_type_name: "lightning__recordInfoType"
+                count: string
+                    is_displayable: True
+                success: boolean
+                message: string
+                    is_displayable: True
         escalate_to_human:
-            description: "Escalate unresolved complaint with full context."
-            label: "Escalate Recovery Case"
+            description: "Creates a support Case assigned to the escalation queue."
             target: "apex://AgentAction_EscalateToHuman"
             inputs:
                 userEmail: string
-                    description: "Diner email"
-                    label: "User Email"
                     is_required: True
                 subject: string
-                    description: "Case subject"
-                    label: "Subject"
                     is_required: False
                 conversationSummary: string
-                    description: "Issue summary"
-                    label: "Conversation Summary"
                     is_required: False
                 issueType: string
-                    description: "Issue type"
-                    label: "Issue Type"
                     is_required: False
             outputs:
+                success: boolean
+                message: string
+                    is_displayable: True
+                caseId: id
+                    is_displayable: True
                 caseNumber: string
-                    label: "Case Number"
+                    is_displayable: True
+
+subagent new_reservation:
+    description: "Create a new reservation using city-first restaurant search."
+    before_reasoning:
+        set @variables.reservationPath = "new"
+
+    reasoning:
+        instructions: ->
+            if @variables.userEmail != "" and @variables.lastReservationCount == "":
+                run @actions.get_reservations
+                    with userEmail = @variables.userEmail
+                    with dinerId = ...
+                    with firstName = ...
+                    with lastName = ...
+                    with phone = ...
+                    set @variables.lastReservationList = @outputs.reservations
+                    set @variables.lastReservationCount = @outputs.count
+                    set @variables.lastActionMessage = @outputs.message
+
+            | New reservation flow:
+            | Stay in this subagent for all new-booking turns. Do not transition back to the router just because the user says no, asks for options, asks for a city list, or changes cuisine.
+            | If userEmail is missing, ask for the user's email address and call set_new_reservation_email when they provide it. Do not ask the user to confirm the email before continuing.
+            | After email lookup, mention the reservation lookup message briefly, then continue the new-booking flow.
+            | Ask for the user's city only. Do not ask for neighborhood, state, address, or other location detail before the first restaurant lookup.
+            | If the user asks to show restaurants, show all options, show restaurants in a specific city, list restaurants in New York, or similar, call search_restaurants_by_city with the city from the user's message before answering.
+            | Never invent or provide sample restaurant names, cuisines, locations, neighborhoods, or addresses. Only list restaurants returned by search_restaurants_by_city.
+            | After city is provided, call search_restaurants_by_city before asking for date, time, party size, cuisine, rating, or restaurant preference.
+            | Display a minimum of 10 restaurants when at least 10 are returned. If fewer than 10 are returned, display every returned restaurant and say only that fewer than 10 matched the city.
+            | For each option, include Name, City__c, Cuisine_Type__c, Avg_Rating__c, Price_Range__c, and Address__c when present. Use exact field values from the returned records.
+            | If the user asks for cuisines available in the city, derive the cuisine list only from Cuisine_Type__c values in the lastRestaurantList. Do not invent cuisine names.
+            | After displaying restaurant options, ask for user preferences such as cuisine and rating, then help them choose a restaurant from the displayed options.
+            | Collect all reservation details: restaurant name, party size, food preferences, date, time, and special requests. The current create reservation action stores restaurant name, party size, date/time, and email; include food preferences and special requests in the conversation summary for Agent Interaction logging.
+            | Call create_booking only after restaurants have been shown from action output, the user has selected a restaurant from those results, and the required details and email are available.
+            | After creation, display the confirmationCode and message returned by the action.
+            | Then route to conversation closure so the Agent Interaction record is logged.
+            | Do NOT use the show_command tool. Always compose your response as direct text.
+        actions:
+            set_new_reservation_email: @utils.setVariables
+                description: "Persist the user's email for a new reservation. Use immediately when the user provides an email; do not ask for confirmation first."
+                with userEmail = ...
+            set_city_and_preferences: @utils.setVariables
+                description: "Collect city first, then optional cuisine preference."
+                with preferredCity = ...
+                with preferredCuisine = ...
+            search_restaurants_by_city: @actions.get_restaurant_info
+                description: "Query restaurants filtered by city. Use this immediately when the user names a city or asks for restaurant options in a city."
+                with city = ...
+                set @variables.lastRestaurantList = @outputs.restaurants
+                set @variables.restaurantsShown = True
+                available when @variables.userEmail != ""
+            create_booking: @actions.create_reservation
+                description: "Create a new reservation only after the user selects a restaurant from the displayed city search results."
+                with userEmail = @variables.userEmail
+                with requestedDateTime = ...
+                with partySize = ...
+                with restaurantName = ...
+                set @variables.lastConfirmationCode = @outputs.confirmationCode
+                set @variables.lastActionMessage = @outputs.message
+                available when @variables.userEmail != "" and @variables.restaurantsShown == True
+            go_to_closure: @utils.transition to @subagent.conversation_closure
+                description: "Log interaction after new reservation flow."
+
+    actions:
+        get_reservations:
+            description: "Retrieves upcoming reservations for a diner by email."
+            target: "apex://AgentAction_GetReservations"
+            inputs:
+                userEmail: string
+                    is_required: False
+                dinerId: id
+                    is_required: False
+                firstName: string
+                    is_required: False
+                lastName: string
+                    is_required: False
+                phone: string
+                    is_required: False
+            outputs:
+                reservations: list[object]
+                    is_displayable: True
+                    complex_data_type_name: "lightning__recordInfoType"
+                count: string
+                    is_displayable: True
+                success: boolean
+                message: string
+                    is_displayable: True
+        get_restaurant_info:
+            description: "Searches restaurants by city."
+            target: "apex://AgentAction_GetRestaurantInfo"
+            inputs:
+                city: string
+                    is_required: True
+            outputs:
+                restaurants: list[object]
+                    is_displayable: True
+                    complex_data_type_name: "lightning__recordInfoType"
+        create_reservation:
+            description: "Creates a new restaurant reservation for a diner."
+            target: "apex://AgentAction_CreateReservation"
+            inputs:
+                userEmail: string
+                    is_required: True
+                requestedDateTime: string
+                    is_required: True
+                partySize: string
+                    is_required: True
+                restaurantName: string
+                    is_required: True
+            outputs:
+                success: boolean
+                message: string
+                    is_displayable: True
+                confirmationCode: string
                     is_displayable: True
 
 subagent conversation_closure:
-    label: "Conversation Closure"
-    description: "Close and log conversation details"
+    description: "Log Agent Interaction details before marking any flow complete."
     reasoning:
         instructions: ->
-            | Before ending the conversation, summarize what was done.
-            | Call close_interaction to persist transcript-level details to Agent_Interaction__c.
+            | Before ending the conversation, summarize what was done and call log_interaction.
+            | The flow is not complete until Agent Interaction logging has been attempted.
+            | Use the returned message directly. Do NOT use the show_command tool.
         actions:
-            log_and_close: @actions.close_interaction
-                with conversationId=...
-                with startDateTime=...
-                with endDateTime=...
-                with transcript=...
-                with topicsDiscussed=...
-                with resolutionType=...
-                with sentimentScore=...
-                with reservationId=...
+            log_interaction: @actions.close_interaction
+                description: "Create or update Agent Interaction with full session details."
+                with conversationId = ...
+                with startDateTime = ...
+                with endDateTime = ...
+                with transcript = ...
+                with topicsDiscussed = ...
+                with resolutionType = ...
+                with sentimentScore = ...
+                with reservationId = ...
                 set @variables.lastActionMessage = @outputs.message
+                set @variables.interactionLogged = @outputs.success
 
     actions:
         close_interaction:
             description: "Stores conversation closure details in Agent Interaction."
-            label: "Close Interaction"
             target: "apex://AgentAction_CloseInteraction"
             inputs:
                 conversationId: string
-                    description: "Conversation identifier"
-                    label: "Conversation Id"
                     is_required: True
-                startDateTime: object
-                    description: "Conversation start datetime"
-                    label: "Start Date Time"
+                startDateTime: datetime
                     is_required: False
-                    complex_data_type_name: "lightning__dateTimeStringType"
-                endDateTime: object
-                    description: "Conversation end datetime"
-                    label: "End Date Time"
+                endDateTime: datetime
                     is_required: False
-                    complex_data_type_name: "lightning__dateTimeStringType"
                 transcript: string
-                    description: "Conversation transcript"
-                    label: "Transcript"
                     is_required: False
                 topicsDiscussed: string
-                    description: "Topics covered"
-                    label: "Topics Discussed"
                     is_required: False
                 resolutionType: string
-                    description: "Resolved, escalated, cancelled, modified, etc."
-                    label: "Resolution Type"
                     is_required: False
                 sentimentScore: number
-                    description: "Estimated customer sentiment score"
-                    label: "Sentiment Score"
                     is_required: False
-                reservationId: object
-                    description: "Reservation identifier"
-                    label: "Reservation Id"
+                reservationId: id
                     is_required: False
-                    complex_data_type_name: "lightning__recordIdType"
             outputs:
                 success: boolean
-                    label: "Success"
+                    is_displayable: True
                 message: string
-                    label: "Status Message"
+                    is_displayable: True
+                interactionId: id
+                    is_displayable: True

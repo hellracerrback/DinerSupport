@@ -4,17 +4,5 @@
         <members>Restro_Manager_AI_Bundle</members>
         <name>AiAuthoringBundle</name>
     </types>
-    <types>
-        <members>Restro_Manager_AI</members>
-        <name>Bot</name>
-    </types>
-    <types>
-        <members>Restro_Manager_AI.v1</members>
-        <name>BotVersion</name>
-    </types>
-    <types>
-        <members>Restro_Manager_AI_v1</members>
-        <name>GenAiPlannerBundle</name>
-    </types>
     <version>66.0</version>
 </Package>
