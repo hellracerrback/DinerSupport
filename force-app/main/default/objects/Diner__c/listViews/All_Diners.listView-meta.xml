@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ListView xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>All_Diners</fullName>
+    <columns>First_Name__c</columns>
+    <columns>NAME</columns>
+    <columns>Preferred_Dining_Time__c</columns>
+    <columns>Total_Lifetime_Bookings__c</columns>
+    <columns>Accessibility_Needs__c</columns>
+    <columns>Anniversary_Date__c</columns>
+    <columns>Average_Party_Size__c</columns>
+    <columns>Dietary_Preferences__c</columns>
+    <filterScope>Everything</filterScope>
+    <label>All Diners</label>
+</ListView>

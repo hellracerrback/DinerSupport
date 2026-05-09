@@ -35,6 +35,13 @@ public with sharing class AgentAction_EscalateToHuman {
             }
         }
 
+        // Query the Escalation Queue
+        Id escalationQueueId = null;
+        List<Group> queues = [SELECT Id FROM Group WHERE Type = 'Queue' AND DeveloperName = 'Diner_Support_Queue' LIMIT 1];
+        if (!queues.isEmpty()) {
+            escalationQueueId = queues[0].Id;
+        }
+
         List<Case> casesToInsert = new List<Case>();
         Map<Integer, Integer> resultIdxToCaseIdx = new Map<Integer, Integer>();
 
@@ -50,6 +57,9 @@ public with sharing class AgentAction_EscalateToHuman {
             }
 
             Case newCase = new Case();
+            if (escalationQueueId != null) {
+                newCase.OwnerId = escalationQueueId;
+            }
             newCase.Status = 'New';
             newCase.Priority = 'High';
             newCase.Origin = 'Chat';

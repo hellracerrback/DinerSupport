@@ -74,5 +74,5 @@
         <members>Diner_Routing_Config</members>
         <name>QueueRoutingConfig</name>
     </types>
-    <version>65.0</version>
+    <version>66.0</version>
 </Package>
