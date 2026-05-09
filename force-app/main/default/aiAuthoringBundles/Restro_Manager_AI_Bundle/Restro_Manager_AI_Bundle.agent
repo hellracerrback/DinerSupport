@@ -158,11 +158,12 @@ subagent booking_management:
                     description: "Requested date and time of the reservation"
                     label: "Requested Date Time"
                     is_required: True
-                    complex_data_type_name: "lightning__dateTimeStringType"
-                partySize: number
+                    complex_data_type_name: "lightning__textType"
+                partySize: object
                     description: "Number of guests"
                     label: "Party Size"
                     is_required: True
+                    complex_data_type_name: "lightning__textType"
                 userEmail: string
                     description: "Diner email address"
                     label: "User Email"
@@ -188,11 +189,12 @@ subagent booking_management:
                     description: "New date and time"
                     label: "New Date Time"
                     is_required: False
-                    complex_data_type_name: "lightning__dateTimeStringType"
-                newPartySize: number
+                    complex_data_type_name: "lightning__textType"
+                newPartySize: object
                     description: "New number of guests"
                     label: "New Party Size"
                     is_required: False
+                    complex_data_type_name: "lightning__textType"
             outputs:
                 success: boolean
                     label: "Success"

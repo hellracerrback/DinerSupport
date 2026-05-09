@@ -16,35 +16,5 @@
         <members>Restro_Manager_AI_v1</members>
         <name>GenAiPlannerBundle</name>
     </types>
-    <types>
-        <members>*</members>
-        <name>GenAiPlugin</name>
-    </types>
-    <types>
-        <members>*</members>
-        <name>GenAiFunction</name>
-    </types>
-    <types>
-        <members>*</members>
-        <name>GenAiPromptTemplate</name>
-    </types>
-    <types>
-        <members>AgentAction_CloseInteraction</members>
-        <members>AgentAction_CancelReservation</members>
-        <members>AgentAction_CreateReservation</members>
-        <members>AgentAction_EscalateToHuman</members>
-        <members>AgentAction_GetReservations</members>
-        <members>AgentAction_GetRestaurantInfo</members>
-        <members>AgentAction_UpdateReservation</members>
-        <members>AgentAction_SearchKnowledge</members>
-        <name>ApexClass</name>
-    </types>
-    <types>
-        <members>Agent_Interaction__c</members>
-        <members>Diner__c</members>
-        <members>Reservation__c</members>
-        <members>Restaurant__c</members>
-        <name>CustomObject</name>
-    </types>
     <version>66.0</version>
 </Package>
